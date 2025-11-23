@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class ExchangeRateController {
     private final ExchangeRateService exchangeRateService;
 
-    @PutMapping
+    @PutMapping()
     public ResponseEntity<HttpStatus> updateRate(@RequestParam String rate){
         exchangeRateService.updateRate(rate);
         return ResponseEntity.ok(HttpStatus.OK);

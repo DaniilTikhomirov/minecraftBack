@@ -71,26 +71,35 @@ public class AdminUsersService {
             String jwt = jwtUtil.generateJwtToken(userDetails);
             String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
+            // ====== ACCESS TOKEN COOKIE ======
             Cookie jwtCookie = new Cookie(JWT_TOKEN.getToken(), jwt);
             jwtCookie.setHttpOnly(true);
-            // TODO true при выгрузке на прод
-            jwtCookie.setSecure(false); // Set to true in production for HTTPS
+            jwtCookie.setSecure(true);           // HTTPS обязательно для SameSite=None
             jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(JWT_TOKEN_TIME_IN_SECONDS.getTime()); // 15 minutes
+            jwtCookie.setMaxAge(JWT_TOKEN_TIME_IN_SECONDS.getTime());
             response.addCookie(jwtCookie);
 
+            // ====== REFRESH TOKEN COOKIE ======
             Cookie refreshCookie = new Cookie(REFRESH_TOKEN.getToken(), refreshToken);
             refreshCookie.setHttpOnly(true);
-            // TODO true при выгрузке на прод
-            refreshCookie.setSecure(false); // Set to true in production for HTTPS
+            refreshCookie.setSecure(true);
             refreshCookie.setPath("/");
             refreshCookie.setMaxAge(REFRESH_TOKEN_TIME_IN_SECONDS.getTime());
             response.addCookie(refreshCookie);
 
+            // ====== SameSite=None (ручной Set-Cookie) ======
+            response.addHeader("Set-Cookie",
+                    JWT_TOKEN.getToken() + "=" + jwt + "; Path=/; Secure; HttpOnly; SameSite=None");
+
+            response.addHeader("Set-Cookie",
+                    REFRESH_TOKEN.getToken() + "=" + refreshToken + "; Path=/; Secure; HttpOnly; SameSite=None");
+
             return true;
-        } else
+        } else {
             return false;
+        }
     }
+
 
     public void logOut(HttpServletResponse response) {
         Cookie jwtCookie = new Cookie(JWT_TOKEN.getToken(), null);
@@ -110,8 +119,9 @@ public class AdminUsersService {
 
     public boolean refresh(HttpServletRequest request, HttpServletResponse response) {
 
-        if(Objects.isNull(request.getCookies()))
+        if (Objects.isNull(request.getCookies()))
             return false;
+
         Cookie refreshCookie = Arrays.stream(request.getCookies())
                 .filter(c -> REFRESH_TOKEN.getToken().equals(c.getName()))
                 .findFirst()
@@ -121,18 +131,28 @@ public class AdminUsersService {
             String refreshToken = refreshCookie.getValue();
             UserDetails userDetails = adminUsersDetailService
                     .loadUserByUsername(jwtUtil.extractUsernameRefresh(refreshToken));
+
             if (jwtUtil.validateTokenRefresh(refreshToken, userDetails)) {
+
                 String jwtToken = jwtUtil.generateJwtToken(userDetails);
 
+                // ===== COOKIE через API =====
                 Cookie jwtCookie = new Cookie(JWT_TOKEN.getToken(), jwtToken);
-                jwtCookie.setHttpOnly(false);
+                jwtCookie.setHttpOnly(true);
+                jwtCookie.setSecure(true);      // обязательно для SameSite=None
                 jwtCookie.setPath("/");
                 jwtCookie.setMaxAge(JWT_TOKEN_TIME_IN_SECONDS.getTime());
                 response.addCookie(jwtCookie);
 
+                // ===== SameSite=None (ручной Set-Cookie) =====
+                response.addHeader("Set-Cookie",
+                        JWT_TOKEN.getToken() + "=" + jwtToken + "; Path=/; Secure; HttpOnly; SameSite=None");
+
                 return true;
             }
         }
+
         return false;
     }
+
 }

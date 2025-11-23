@@ -13,11 +13,13 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // применить ко всем эндпоинтам
-                        .allowedOrigins("*") // разрешить всем источникам
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // все основные методы
-                        .allowedHeaders("*"); // любые заголовки
+                registry.addMapping("/**")
+                        .allowedOriginPatterns("*")    // вместо allowedOrigins("*")
+                        .allowedMethods("*")           // любые методы
+                        .allowedHeaders("*")           // любые заголовки
+                        .allowCredentials(true);       // разрешить куки
             }
         };
     }
 }
+
