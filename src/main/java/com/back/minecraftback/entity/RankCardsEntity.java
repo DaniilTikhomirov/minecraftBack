@@ -3,6 +3,8 @@ package com.back.minecraftback.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "rank_cards", schema = "mc_backend")
@@ -20,7 +22,9 @@ public class RankCardsEntity {
 
     private Integer price;
 
-    private String description;
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(columnDefinition = "text[]")
+    private String[] description;
 
     private Boolean active = true;
 }

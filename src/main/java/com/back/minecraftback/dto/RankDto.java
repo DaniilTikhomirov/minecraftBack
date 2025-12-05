@@ -4,7 +4,7 @@ public record RankDto(
         Long id,
         String title,
         Integer price,
-        String description,
+        String[] description,
         String imageUrl,
         String imageBase64
 ) {

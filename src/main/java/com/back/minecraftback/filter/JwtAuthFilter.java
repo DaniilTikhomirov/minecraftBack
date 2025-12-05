@@ -17,7 +17,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Objects;
 
 import static com.back.minecraftback.model.Token.JWT_TOKEN;
 import static com.back.minecraftback.model.Token.REFRESH_TOKEN;
@@ -44,8 +43,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 handleRefreshToken(request, response, cookies);
             }
         } catch (RuntimeException e) {
-            // Ошибка токена или сервера → выбрасываем наружу, чтобы GlobalExceptionHandler вернул 500
-            throw e;
+            // Ошибка токена или пользователя → выбрасываем наружу, чтобы GlobalExceptionHandler вернул 401/403
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
         }
 
         filterChain.doFilter(request, response);
@@ -57,8 +57,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+            // Проверка токена
             if (!jwtUtil.validateTokenJwt(token, userDetails)) {
-                throw new RuntimeException("Invalid JWT token"); // Ошибка → 500
+                throw new RuntimeException("Invalid JWT token");
+            }
+
+            // Проверка, что пользователь включен
+            if (!userDetails.isEnabled()) {
+                throw new RuntimeException("User is disabled");
             }
 
             UsernamePasswordAuthenticationToken authToken =
@@ -76,8 +82,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
                 if (!jwtUtil.validateTokenRefresh(refreshToken, userDetails)) {
                     throw new RuntimeException("Invalid Refresh token");
+                }
+
+                // Проверка, что пользователь включен
+                if (!userDetails.isEnabled()) {
+                    throw new RuntimeException("User is disabled");
                 }
 
                 // Генерируем новый JWT

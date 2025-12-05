@@ -36,12 +36,13 @@ CREATE TABLE admin_users
 CREATE TABLE rank_cards
 (
     id          BIGSERIAL PRIMARY KEY,
-    title       varchar(255) UNIQUE  NOT NULL,
-    image_url   varchar(5000),
-    price       int                  NOT NULL,
-    description varchar(5000),
-    active      boolean DEFAULT TRUE NOT NULL
+    title       VARCHAR(255) UNIQUE NOT NULL,
+    image_url   VARCHAR(5000),
+    price       INT NOT NULL,
+    description TEXT[] NOT NULL,
+    active      BOOLEAN DEFAULT TRUE NOT NULL
 );
+
 
 -- changeset danil:create_cases
 CREATE TABLE cases
