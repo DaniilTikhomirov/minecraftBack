@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,45 +20,60 @@ public class FileStorageService {
 
     private final Tika tika;
 
-    @Value("${storage.dir}")
-    private String STORAGE_DIR;
+    /**
+     * Сюда Spring подставляет из application.properties
+     * или из ENV STORAGE_DIR
+     */
+    @Value("${storage.dir:}")
+    private String storageDir;
+
+    private Path storageRoot;
 
     /**
-     * Сохраняет файл с автоматическим именем и возвращает только имя файла
+     * Инициализация хранилища
      */
+    @PostConstruct
+    public void initStorage() {
+        try {
+            if (storageDir == null || storageDir.isBlank()) {
+                // Если путь не задан → используем домашнюю папку пользователя
+                String userHome = System.getProperty("user.home");
+                storageDir = userHome + "/minecraft_photo_data";
+            }
+
+            storageRoot = Paths.get(storageDir).toAbsolutePath().normalize();
+
+            if (!Files.exists(storageRoot)) {
+                Files.createDirectories(storageRoot);
+            }
+
+            System.out.println("📁 File storage initialized at: " + storageRoot);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось инициализировать директорию хранилища", e);
+        }
+    }
+
     public String save(byte[] data) {
         try {
             String extension = getExtension(detectType(data));
             String fileName = UUID.randomUUID() + extension;
 
-            Path storagePath = Paths.get(STORAGE_DIR).toAbsolutePath().normalize();
-            if (!Files.exists(storagePath)) {
-                Files.createDirectories(storagePath);
-            }
-
-            Path filePath = storagePath.resolve(fileName);
+            Path filePath = storageRoot.resolve(fileName);
             Files.write(filePath, data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
             return fileName;
-
         } catch (IOException e) {
             throw new RuntimeException("Не удалось сохранить файл", e);
         }
     }
 
-    /**
-     * Сохраняет файл по указанной поддиректории относительно STORAGE_DIR
-     * inputPath может быть типа "images/subdir/file.jpg"
-     * Возвращает путь внутри storage (например "images/subdir/file.jpg")
-     */
     public String save(byte[] data, String inputPath) {
         try {
-            Path storagePath = Paths.get(STORAGE_DIR).toAbsolutePath().normalize();
-            Path filePath = storagePath.resolve(inputPath).normalize();
+            Path filePath = storageRoot.resolve(inputPath).normalize();
 
-            // защита от выхода за пределы storage
-            if (!filePath.startsWith(storagePath)) {
-                throw new RuntimeException("Попытка сохранения вне директории хранилища");
+            if (!filePath.startsWith(storageRoot)) {
+                throw new RuntimeException("Попытка сохранения вне хранилища");
             }
 
             Path parent = filePath.getParent();
@@ -67,23 +83,20 @@ public class FileStorageService {
 
             Files.write(filePath, data, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            // возвращаем путь относительно storage с нормализованными разделителями "/"
-            return storagePath.relativize(filePath).toString().replace(filePath.getFileSystem().getSeparator(), "/");
+            return storageRoot.relativize(filePath)
+                    .toString()
+                    .replace(filePath.getFileSystem().getSeparator(), "/");
 
         } catch (IOException e) {
             throw new RuntimeException("Не удалось сохранить файл: " + inputPath, e);
         }
     }
 
-    /**
-     * Загружает файл относительно директории STORAGE_DIR
-     */
     public FileSystemResource loadAsResource(String fileName) {
         try {
-            Path storagePath = Paths.get(STORAGE_DIR).toAbsolutePath().normalize();
-            Path filePath = storagePath.resolve(fileName).normalize();
+            Path filePath = storageRoot.resolve(fileName).normalize();
 
-            if (!filePath.startsWith(storagePath)) {
+            if (!filePath.startsWith(storageRoot)) {
                 throw new RuntimeException("Попытка доступа вне хранилища");
             }
 
