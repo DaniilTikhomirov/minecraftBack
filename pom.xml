@@ -87,12 +87,6 @@
             <scope>provided</scope> <!-- Это нужно, чтобы библиотека не попала в окончательный пакет -->
         </dependency>
 
-        <dependency>
-            <groupId>com.vladmihalcea</groupId>
-            <artifactId>hibernate-types-60</artifactId>
-            <version>2.21.1</version>
-        </dependency>
-
 
         <dependency>
             <groupId>org.springdoc</groupId>

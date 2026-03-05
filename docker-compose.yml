@@ -1,18 +1,20 @@
 services:
   backend:
-    image: daniltikhomirov/minecraft_backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: minecraft_backend
     ports:
       - "8080:8080"
 
     environment:
-      SPRING_DATASOURCE_URL:
-      SPRING_DATASOURCE_USERNAME:
-      SPRING_DATASOURCE_PASSWORD:
-      SUPER_ADMIN_USERNAME:
-      SUPER_ADMIN_PASSWORD:
-      JWT_SECRET_KEY:
-      REFRESH_SECRET_KEY:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/minecraft
+      SPRING_DATASOURCE_USERNAME: telegram
+      SPRING_DATASOURCE_PASSWORD: tg123
+      SUPER_ADMIN_USERNAME: admin
+      SUPER_ADMIN_PASSWORD: admin
+      JWT_SECRET_KEY: ReKJZW6VekQl9blL2NSD9PeOmU65d8tq
+      REFRESH_SECRET_KEY: 9St9275RBcn2RCucOffCbYDnYjhvt94q
 
     # Монтируем папку на сервере → внутрь контейнера
     volumes:
@@ -34,9 +36,9 @@ services:
     image: postgres:15
     container_name: minecraft_db
     environment:
-      POSTGRES_DB:
-      POSTGRES_USER:
-      POSTGRES_PASSWORD:
+      POSTGRES_DB: minecraft
+      POSTGRES_USER: telegram
+      POSTGRES_PASSWORD: tg123
     ports:
       - "5433:5432"
     volumes:
