@@ -86,12 +86,14 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Только доверенные домены (безопасно: без wildcard при allowCredentials)
+        // Только доверенные домены (без wildcard при allowCredentials)
         configuration.setAllowedOrigins(List.of(
                 "https://night-vision.su",
                 "http://night-vision.su",
                 "https://www.night-vision.su",
-                "http://www.night-vision.su"
+                "http://www.night-vision.su",
+                "https://api.night-vision.su",
+                "http://api.night-vision.su"
         ));
 
         configuration.setAllowedMethods(List.of(
