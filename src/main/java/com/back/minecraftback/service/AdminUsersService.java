@@ -49,8 +49,11 @@ public class AdminUsersService {
             throw new IllegalArgumentException("password is required");
         if (createAdminDTO.username() == null || createAdminDTO.username().isBlank())
             throw new IllegalArgumentException("username is required");
+        String rawPassword = createAdminDTO.password();
+        if (rawPassword == null || rawPassword.isBlank())
+            throw new IllegalArgumentException("password is required");
         AdminUsersEntity entity = adminMapper.toEntity(createAdminDTO);
-        entity.setPassword(passwordEncoder.encode(createAdminDTO.password()));
+        entity.setPassword(passwordEncoder.encode(rawPassword));
         adminUsersRepository.save(entity);
     }
 

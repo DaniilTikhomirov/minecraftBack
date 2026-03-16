@@ -29,9 +29,9 @@ public class AdminController {
     private final MiniNewsService miniNewsService;
 
     @PostMapping(value = "/create", consumes = "application/json")
-    public ResponseEntity<?> createAdmin(@RequestBody CreateAdminDTO createAdminDTO) {
+    public ResponseEntity<?> createAdmin(@RequestBody(required = false) CreateAdminDTO createAdminDTO) {
         if (createAdminDTO == null) {
-            return ResponseEntity.badRequest().body("DTO is null (received: null body)");
+            return ResponseEntity.badRequest().body("Invalid request: send Content-Type: application/json and body {\"username\":\"...\",\"password\":\"...\",\"role\":\"ADMIN\" or \"SUPER_ADMIN\"}");
         }
         String username = createAdminDTO.username();
         String password = createAdminDTO.password();

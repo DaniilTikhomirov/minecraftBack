@@ -19,8 +19,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleBadRequest(IllegalArgumentException ex) {
+        String message = ex.getMessage();
+        if (message != null && message.contains("rawPassword cannot be null")) {
+            message = "password is required";
+        }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body("Bad request: " + ex.getMessage());
+                .body("Bad request: " + message);
     }
 
     @ExceptionHandler(Exception.class)
