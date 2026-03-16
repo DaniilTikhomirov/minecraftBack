@@ -32,11 +32,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     /** Не проверять JWT для входа и обновления токена — там токена ещё нет или он в теле. */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getServletPath();
-        return path != null && (
-                path.equals("/auth") || path.startsWith("/auth/") ||
-                path.equals("/api/auth") || path.startsWith("/api/auth/")
-        );
+        String servletPath = request.getServletPath() != null ? request.getServletPath() : "";
+        String requestUri = request.getRequestURI() != null ? request.getRequestURI() : "";
+        return isAuthPath(servletPath) || isAuthPath(requestUri);
+    }
+
+    private static boolean isAuthPath(String path) {
+        if (path == null || path.isEmpty()) return false;
+        String p = path.startsWith("/") ? path : "/" + path;
+        return p.equals("/auth") || p.startsWith("/auth/") ||
+                p.equals("/api/auth") || p.startsWith("/api/auth/");
     }
 
     @Override

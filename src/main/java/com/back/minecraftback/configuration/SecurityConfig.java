@@ -44,11 +44,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/swagger-ui.html",
                                 "/webjars/**",
-                                "/auth",
-                                "/auth/**",
-                                "/api/auth",
-                                "/api/auth/**",
-                                "auth/refresh",
+                                "/auth", "/auth/**", "/api/auth", "/api/auth/**",
                                 "/files/**",
                                 "files/**",
                                 "actuator/**",
@@ -58,6 +54,13 @@ public class SecurityConfig {
                                 "mini-news/get",
                                 "rank/get"
                         ).permitAll()
+                        .requestMatchers(request -> {
+                            String path = request.getServletPath();
+                            String uri = request.getRequestURI();
+                            boolean isAuth = (path != null && (path.equals("/auth") || path.startsWith("/auth/") || path.equals("/api/auth") || path.startsWith("/api/auth/")))
+                                    || (uri != null && (uri.endsWith("/auth") || uri.endsWith("/auth/") || uri.contains("/auth/")));
+                            return isAuth;
+                        }).permitAll()
                         .requestMatchers(
                                 "/admin/create",
                                 "/admin/enabled",
