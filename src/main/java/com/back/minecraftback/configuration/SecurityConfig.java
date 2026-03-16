@@ -65,7 +65,7 @@ public class SecurityConfig {
                                 "/cases/clear",
                                 "/main-news/clear",
                                 "/mini-news/clear",
-                                "/api/db/**"
+                                "/db/**"
                         ).hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 ).exceptionHandling(ex -> ex
