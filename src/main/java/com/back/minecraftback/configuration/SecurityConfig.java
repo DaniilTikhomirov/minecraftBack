@@ -60,6 +60,7 @@ public class SecurityConfig {
                                 "/admin/enabled",
                                 "/admin",
                                 "/admin/data",
+                                "/admin/clear/**",
                                 "/rank/clear",
                                 "/cases/clear",
                                 "/main-news/clear",

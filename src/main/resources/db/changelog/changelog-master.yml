@@ -3,3 +3,5 @@ databaseChangeLog:
       file: db/changelog/v1/create-tables.sql
   - include:
       file: db/changelog/v2/drop-rank-cards-title-unique.sql
+  - include:
+      file: db/changelog/v3/drop-rank-cards-title-unique-robust.sql

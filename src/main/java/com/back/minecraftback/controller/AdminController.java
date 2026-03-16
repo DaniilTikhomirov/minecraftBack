@@ -3,6 +3,7 @@ package com.back.minecraftback.controller;
 import com.back.minecraftback.dto.AllDataDto;
 import com.back.minecraftback.dto.CreateAdminDTO;
 import com.back.minecraftback.model.Role;
+import com.back.minecraftback.service.AdminDataService;
 import com.back.minecraftback.service.AdminUsersService;
 import com.back.minecraftback.service.CasesService;
 import com.back.minecraftback.service.MainNewsService;
@@ -20,7 +21,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/admin")
 public class AdminController {
+
     private final AdminUsersService adminUsersService;
+    private final AdminDataService adminDataService;
     private final RankCardsService rankCardsService;
     private final CasesService casesService;
     private final MainNewsService mainNewsService;
@@ -62,21 +65,40 @@ public class AdminController {
 
     /**
      * GET /admin — список логинов админов (query: isEnabled).
-     * GET /admin?data=full — всё содержимое БД для всплывающего окна (rankCards, cases, mainNews, miniNews).
+     * GET /admin?data=full — то же, что GET /admin/data (полный дамп БД через AdminDataService).
      */
     @GetMapping()
     public ResponseEntity<?> getAdmin(
             @RequestParam(required = false) Optional<Boolean> isEnabled,
             @RequestParam(required = false) String data) {
         if ("full".equalsIgnoreCase(data)) {
-            AllDataDto dto = new AllDataDto(
-                    rankCardsService.getAllFromDb(),
-                    casesService.getAllFromDb(),
-                    mainNewsService.getAllFromDb(),
-                    miniNewsService.getAllFromDb()
-            );
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(adminDataService.getAllData());
         }
         return ResponseEntity.ok(adminUsersService.getUsernames(isEnabled));
+    }
+
+    /** Очистка всех записей из БД. Только SUPER_ADMIN. Вызывать POST /admin/clear/rank и т.д. */
+    @PostMapping("/clear/rank")
+    public ResponseEntity<HttpStatus> clearRank() {
+        rankCardsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/clear/cases")
+    public ResponseEntity<HttpStatus> clearCases() {
+        casesService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/clear/main-news")
+    public ResponseEntity<HttpStatus> clearMainNews() {
+        mainNewsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/clear/mini-news")
+    public ResponseEntity<HttpStatus> clearMiniNews() {
+        miniNewsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
