@@ -30,15 +30,19 @@ public class RankCardsService {
     }
 
     private RankCardsEntity toEntity(RankDto dto) {
-        RankCardsEntity rankEntity = mapper.toRankCardsEntity(dto);
-
         if (isNew(dto)) {
+            RankCardsEntity rankEntity = mapper.toRankCardsEntity(dto);
+            rankEntity.setActive(true);
             handleNewEntity(dto, rankEntity);
             return rankEntity;
         }
-
-        handleExistingEntity(dto, rankEntity);
-        return rankEntity;
+        RankCardsEntity existing = rankCardsRepository.findById(dto.id()).orElseThrow(EntityNotFoundException::new);
+        RankCardsEntity fromDto = mapper.toRankCardsEntity(dto);
+        existing.setTitle(fromDto.getTitle());
+        existing.setPrice(fromDto.getPrice());
+        existing.setDescription(fromDto.getDescription());
+        handleExistingEntity(dto, existing);
+        return existing;
     }
 
 
