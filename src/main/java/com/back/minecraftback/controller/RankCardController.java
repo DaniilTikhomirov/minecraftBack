@@ -22,17 +22,16 @@ public class RankCardController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    /** Активные: GET /rank/get. Неактивные: GET /rank/get?inactive=true */
     @GetMapping("/get")
-    public ResponseEntity<List<GetRankDto>> getRank() {
+    public ResponseEntity<List<GetRankDto>> getRank(@RequestParam(name = "inactive", required = false, defaultValue = "false") boolean inactive) {
+        if (inactive) {
+            return ResponseEntity.ok(rankCardsService.getAllInactive());
+        }
         return ResponseEntity.ok(rankCardsService.getAll());
     }
 
-    @GetMapping("/inactive")
-    public ResponseEntity<List<GetRankDto>> getInactiveRanks() {
-        return ResponseEntity.ok(rankCardsService.getAllInactive());
-    }
-
-    @PutMapping("/{id:[0-9]+}")
+    @PutMapping("/{id}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         rankCardsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);

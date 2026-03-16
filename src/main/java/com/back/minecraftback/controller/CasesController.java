@@ -22,17 +22,16 @@ public class CasesController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    /** Активные: GET /cases/get. Неактивные: GET /cases/get?inactive=true */
     @GetMapping("/get")
-    public ResponseEntity<List<GetCasesDto>> getCases() {
+    public ResponseEntity<List<GetCasesDto>> getCases(@RequestParam(name = "inactive", required = false, defaultValue = "false") boolean inactive) {
+        if (inactive) {
+            return ResponseEntity.ok(casesService.getAllInactive());
+        }
         return ResponseEntity.ok(casesService.getAll());
     }
 
-    @GetMapping("/inactive")
-    public ResponseEntity<List<GetCasesDto>> getInactiveCases() {
-        return ResponseEntity.ok(casesService.getAllInactive());
-    }
-
-    @PutMapping("/{id:[0-9]+}")
+    @PutMapping("/{id}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         casesService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);

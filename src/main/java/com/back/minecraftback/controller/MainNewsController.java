@@ -22,17 +22,16 @@ public class MainNewsController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    /** Активные: GET /main-news/get. Неактивные: GET /main-news/get?inactive=true */
     @GetMapping("/get")
-    public ResponseEntity<List<GetNewsDto>> getNews() {
+    public ResponseEntity<List<GetNewsDto>> getNews(@RequestParam(name = "inactive", required = false, defaultValue = "false") boolean inactive) {
+        if (inactive) {
+            return ResponseEntity.ok(mainNewsService.getAllInactive());
+        }
         return ResponseEntity.ok(mainNewsService.getAll());
     }
 
-    @GetMapping("/inactive")
-    public ResponseEntity<List<GetNewsDto>> getInactiveNews() {
-        return ResponseEntity.ok(mainNewsService.getAllInactive());
-    }
-
-    @PutMapping("/{id:[0-9]+}")
+    @PutMapping("/{id}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         mainNewsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);

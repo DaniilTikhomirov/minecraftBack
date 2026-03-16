@@ -22,17 +22,16 @@ public class MiniNewsController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    /** Активные: GET /mini-news/get. Неактивные: GET /mini-news/get?inactive=true */
     @GetMapping("/get")
-    public ResponseEntity<List<GetNewsDto>> getNews() {
+    public ResponseEntity<List<GetNewsDto>> getNews(@RequestParam(name = "inactive", required = false, defaultValue = "false") boolean inactive) {
+        if (inactive) {
+            return ResponseEntity.ok(miniNewsService.getAllInactive());
+        }
         return ResponseEntity.ok(miniNewsService.getAll());
     }
 
-    @GetMapping("/inactive")
-    public ResponseEntity<List<GetNewsDto>> getInactiveNews() {
-        return ResponseEntity.ok(miniNewsService.getAllInactive());
-    }
-
-    @PutMapping("/{id:[0-9]+}")
+    @PutMapping("/{id}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         miniNewsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
