@@ -40,11 +40,13 @@ public class AdminUsersService {
     }
 
     public void save(CreateAdminDTO createAdminDTO) {
-        if (createAdminDTO.password() == null || createAdminDTO.password().isBlank())
+        if (createAdminDTO == null || createAdminDTO.password() == null || createAdminDTO.password().isBlank())
             throw new IllegalArgumentException("password is required");
         if (createAdminDTO.username() == null || createAdminDTO.username().isBlank())
             throw new IllegalArgumentException("username is required");
-        adminUsersRepository.save(adminMapper.toEntity(createAdminDTO, passwordEncoder));
+        AdminUsersEntity entity = adminMapper.toEntity(createAdminDTO);
+        entity.setPassword(passwordEncoder.encode(createAdminDTO.password()));
+        adminUsersRepository.save(entity);
     }
 
     public boolean swapEnabled(String username) {
