@@ -17,7 +17,13 @@ public class AdminController {
     private final AdminUsersService adminUsersService;
 
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> createAdmin(@RequestBody CreateAdminDTO createAdminDTO) {
+    public ResponseEntity<?> createAdmin(@RequestBody(required = false) CreateAdminDTO createAdminDTO) {
+        if (createAdminDTO == null || createAdminDTO.password() == null || createAdminDTO.password().isBlank()) {
+            return ResponseEntity.badRequest().body("Отправьте JSON: {\"username\":\"...\", \"password\":\"...\", \"role\":\"ADMIN\" или \"SUPER_ADMIN\"}. Content-Type: application/json");
+        }
+        if (createAdminDTO.username() == null || createAdminDTO.username().isBlank()) {
+            return ResponseEntity.badRequest().body("username обязателен");
+        }
         adminUsersService.save(createAdminDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
