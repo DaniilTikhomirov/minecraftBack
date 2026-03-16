@@ -10,7 +10,7 @@ import java.util.List;
 public interface RankCardsRepository extends JpaRepository<RankCardsEntity, Long> {
     List<RankCardsEntity> findAllByActiveIsTrue();
 
-    /** Все неактивные: active = false или active IS NULL (старые записи). */
-    @Query("SELECT e FROM RankCardsEntity e WHERE e.active IS NULL OR e.active = false")
+    /** Все неактивные: active = false или active IS NULL. */
+    @Query("SELECT e FROM RankCardsEntity e WHERE (e.active = false OR e.active IS NULL)")
     List<RankCardsEntity> findAllInactive();
 }
