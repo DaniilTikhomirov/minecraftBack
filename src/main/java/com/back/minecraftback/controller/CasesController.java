@@ -27,12 +27,12 @@ public class CasesController {
         return ResponseEntity.ok(casesService.getAll());
     }
 
-    @GetMapping({ "/inactive", "/list/inactive" })
+    @GetMapping("/inactive")
     public ResponseEntity<List<GetCasesDto>> getInactiveCases() {
         return ResponseEntity.ok(casesService.getAllInactive());
     }
 
-    @PutMapping("/toggle/{id}")
+    @PutMapping("/{id:[0-9]+}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         casesService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);

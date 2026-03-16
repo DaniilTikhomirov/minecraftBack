@@ -27,12 +27,12 @@ public class MiniNewsController {
         return ResponseEntity.ok(miniNewsService.getAll());
     }
 
-    @GetMapping({ "/inactive", "/list/inactive" })
+    @GetMapping("/inactive")
     public ResponseEntity<List<GetNewsDto>> getInactiveNews() {
         return ResponseEntity.ok(miniNewsService.getAllInactive());
     }
 
-    @PutMapping("/toggle/{id}")
+    @PutMapping("/{id:[0-9]+}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         miniNewsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);

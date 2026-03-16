@@ -27,13 +27,12 @@ public class RankCardController {
         return ResponseEntity.ok(rankCardsService.getAll());
     }
 
-    /** Неактивные карточки: GET /rank/inactive или GET /rank/list/inactive */
-    @GetMapping({ "/inactive", "/list/inactive" })
+    @GetMapping("/inactive")
     public ResponseEntity<List<GetRankDto>> getInactiveRanks() {
         return ResponseEntity.ok(rankCardsService.getAllInactive());
     }
 
-    @PutMapping("/toggle/{id}")
+    @PutMapping("/{id:[0-9]+}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         rankCardsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
