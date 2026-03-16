@@ -94,10 +94,13 @@ public class AdminController {
     }
 
     @PostMapping(value = "/create-v2", consumes = "application/json")
-    public ResponseEntity<?> createAdminV2(@RequestBody CreateAdminRequest request) {
+    public ResponseEntity<?> createAdminV2(@RequestBody(required = false) CreateAdminRequest request) {
         System.out.println("=== CREATE ADMIN V2 ===");
         System.out.println("Request: " + request);
 
+        if (request == null) {
+            return ResponseEntity.badRequest().body("Request body is required (JSON: username, password, role)");
+        }
         if (request.getUsername() == null || request.getUsername().isBlank()) {
             return ResponseEntity.badRequest().body("username is required");
         }
