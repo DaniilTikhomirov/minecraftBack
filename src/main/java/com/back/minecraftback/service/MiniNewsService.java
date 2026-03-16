@@ -87,7 +87,7 @@ public class MiniNewsService {
     }
 
     public List<GetNewsDto> getAllInactive() {
-        return newsMapper.toGetNewsDtoMini(miniNewsRepository.findAllByActiveIsFalse());
+        return newsMapper.toGetNewsDtoMini(miniNewsRepository.findAllInactive());
     }
 
     public void swapActive(long id){

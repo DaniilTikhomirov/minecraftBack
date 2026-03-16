@@ -36,4 +36,11 @@ public class RankCardController {
         rankCardsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /** Удалить карточку навсегда (активную или неактивную). */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteRank(@PathVariable Long id) {
+        rankCardsService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

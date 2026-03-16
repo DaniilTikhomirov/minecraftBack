@@ -89,7 +89,7 @@ public class MainNewsService {
     }
 
     public List<GetNewsDto> getAllInactive() {
-        return newsMapper.toGetNewsDtoMain(mainNewsRepository.findAllByActiveIsFalse());
+        return newsMapper.toGetNewsDtoMain(mainNewsRepository.findAllInactive());
     }
 
     public void swapActive(long id){

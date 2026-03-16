@@ -89,7 +89,7 @@ public class CasesService {
     }
 
     public List<GetCasesDto> getAllInactive() {
-        return mapper.toGetCasesDto(casesRepository.findAllByActiveIsFalse());
+        return mapper.toGetCasesDto(casesRepository.findAllInactive());
     }
 
     public void swapActive(long id){

@@ -92,12 +92,19 @@ public class RankCardsService {
     }
 
     public List<GetRankDto> getAllInactive() {
-        return mapper.toGetRankDto(rankCardsRepository.findAllByActiveIsFalse());
+        return mapper.toGetRankDto(rankCardsRepository.findAllInactive());
     }
 
-    public void swapActive(long id){
+    public void swapActive(long id) {
         RankCardsEntity rankCardsEntity = rankCardsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         rankCardsEntity.setActive(!rankCardsEntity.getActive());
         rankCardsRepository.save(rankCardsEntity);
+    }
+
+    public void deleteById(long id) {
+        if (!rankCardsRepository.existsById(id)) {
+            throw new EntityNotFoundException();
+        }
+        rankCardsRepository.deleteById(id);
     }
 }
