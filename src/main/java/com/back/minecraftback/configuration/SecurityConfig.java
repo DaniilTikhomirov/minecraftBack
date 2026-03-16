@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/auth/**",
                                 "auth/refresh",
+                                "/files/**",
                                 "files/**",
                                 "actuator/**",
                                 "cases/get",
