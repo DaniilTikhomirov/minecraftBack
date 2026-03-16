@@ -102,19 +102,28 @@ public class AdminUsersService {
 
 
     public void logOut(HttpServletResponse response) {
-        Cookie jwtCookie = new Cookie(JWT_TOKEN.getToken(), null);
+        // Атрибуты должны совпадать с теми, что при установке cookie (Secure, Path, SameSite),
+        // иначе браузер не удалит HttpOnly cookie
+        Cookie jwtCookie = new Cookie(JWT_TOKEN.getToken(), "");
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false); // true на продакшене
+        jwtCookie.setSecure(true);
         jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(0); // удаляем cookie
+        jwtCookie.setMaxAge(0);
 
-        Cookie refreshCookie = new Cookie(REFRESH_TOKEN.getToken(), null);
+        Cookie refreshCookie = new Cookie(REFRESH_TOKEN.getToken(), "");
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(false); // true на продакшене
+        refreshCookie.setSecure(true);
         refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(0); // удаляем cookie
-        response.addCookie(refreshCookie);
+        refreshCookie.setMaxAge(0);
+
         response.addCookie(jwtCookie);
+        response.addCookie(refreshCookie);
+
+        // Явный Set-Cookie с SameSite=None — как при логине, иначе кука может не сброситься при cross-origin
+        response.addHeader("Set-Cookie",
+                JWT_TOKEN.getToken() + "=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None");
+        response.addHeader("Set-Cookie",
+                REFRESH_TOKEN.getToken() + "=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=None");
     }
 
     public boolean refresh(HttpServletRequest request, HttpServletResponse response) {
