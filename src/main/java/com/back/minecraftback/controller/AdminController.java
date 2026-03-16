@@ -1,8 +1,25 @@
 package com.back.minecraftback.controller;
 
+/**
+ * Админ-контроллер. Требуется роль SUPER_ADMIN.
+ *
+ * База данных: PostgreSQL, схема mc_backend. Таблицы (ячейки — колонки):
+ * - admin_users: id, username, password, role, enabled, created_at
+ * - main_news: id, title, description, date, active, image_url
+ * - mini_news: id, title, description, date, active, image_url
+ * - rank_cards: id, title, image_url, price, description, active
+ * - cases: id, title, subtitle, description, image_url, price, active
+ * - transaction_log, paid_order, exchange_rate — остальные таблицы
+ *
+ * Очистка (удаление всех записей из таблицы):
+ * GET /admin/clear — список доступных целей (rank, cases, main-news, mini-news)
+ * POST /admin/clear/rank — очистить rank_cards
+ * POST /admin/clear/cases — очистить cases
+ * POST /admin/clear/main-news — очистить main_news
+ * POST /admin/clear/mini-news — очистить mini_news
+ */
 import com.back.minecraftback.dto.AllDataDto;
 import com.back.minecraftback.dto.CreateAdminDTO;
-import com.back.minecraftback.dto.CreateAdminRequest;
 import com.back.minecraftback.model.Role;
 import com.back.minecraftback.service.AdminDataService;
 import com.back.minecraftback.service.AdminUsersService;
@@ -11,13 +28,16 @@ import com.back.minecraftback.service.MainNewsService;
 import com.back.minecraftback.service.MiniNewsService;
 import com.back.minecraftback.service.RankCardsService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin")
@@ -30,101 +50,46 @@ public class AdminController {
     private final MainNewsService mainNewsService;
     private final MiniNewsService miniNewsService;
 
-    @PostMapping(value = "/create", consumes = { "application/json", "application/x-www-form-urlencoded" })
-    public ResponseEntity<?> createAdmin(@RequestBody(required = false) CreateAdminDTO createAdminDTO,
-                                          @RequestParam(required = false) String username,
-                                          @RequestParam(required = false) String password,
-                                          @RequestParam(required = false) String role) {
+    /**
+     * Создание админа. Только JSON.
+     * Тело: {"username":"...", "password":"...", "role":"ADMIN" или "SUPER_ADMIN"}
+     */
+    @PostMapping(value = "/create", consumes = "application/json")
+    public ResponseEntity<?> createAdmin(@RequestBody(required = false) CreateAdminDTO body) {
+        log.info("[createAdmin] start");
 
-        System.out.println("=== CREATE ADMIN DEBUG ===");
-        System.out.println("DTO: " + (createAdminDTO != null ? createAdminDTO : "null"));
-        System.out.println("Params - username: " + username);
-        System.out.println("Params - password: " + (password != null ? "present" : "null"));
-        System.out.println("Params - role: " + role);
-
-        try {
-            String finalUsername = null;
-            String finalPassword = null;
-            Role finalRole = null;
-
-            if (createAdminDTO != null) {
-                finalUsername = createAdminDTO.username();
-                finalPassword = createAdminDTO.password();
-                finalRole = createAdminDTO.role();
-            }
-
-            if ((finalUsername == null || finalUsername.isBlank()) && username != null && !username.isBlank()) {
-                finalUsername = username.trim();
-            }
-
-            if ((finalPassword == null || finalPassword.isBlank()) && password != null && !password.isBlank()) {
-                finalPassword = password.trim();
-            }
-
-            if (finalRole == null && role != null && !role.isBlank()) {
-                try {
-                    finalRole = Role.valueOf(role.trim().toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    return ResponseEntity.badRequest().body("role must be ADMIN or SUPER_ADMIN");
-                }
-            }
-
-            if (finalUsername == null || finalUsername.isBlank()) {
-                return ResponseEntity.badRequest().body("username is required");
-            }
-
-            if (finalPassword == null || finalPassword.isBlank()) {
-                return ResponseEntity.badRequest().body("password is required");
-            }
-
-            if (finalRole == null) {
-                return ResponseEntity.badRequest().body("role is required (ADMIN or SUPER_ADMIN)");
-            }
-
-            CreateAdminDTO dtoToSave = new CreateAdminDTO(finalUsername, finalPassword, finalRole);
-            System.out.println("Saving admin with: " + dtoToSave);
-
-            adminUsersService.save(dtoToSave);
-            return new ResponseEntity<>(HttpStatus.CREATED);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
-    }
-
-    @PostMapping(value = "/create-v2", consumes = "application/json")
-    public ResponseEntity<?> createAdminV2(@RequestBody(required = false) CreateAdminRequest request) {
-        System.out.println("=== CREATE ADMIN V2 ===");
-        System.out.println("Request: " + request);
-
-        if (request == null) {
+        if (body == null) {
+            log.warn("[createAdmin] body is null");
             return ResponseEntity.badRequest().body("Request body is required (JSON: username, password, role)");
         }
-        if (request.getUsername() == null || request.getUsername().isBlank()) {
+
+        log.debug("[createAdmin] received username='{}', role={}, passwordPresent={}",
+                body.username(), body.role(), body.password() != null && !body.password().isBlank());
+
+        if (body.username() == null || body.username().isBlank()) {
+            log.warn("[createAdmin] validation failed: username empty");
             return ResponseEntity.badRequest().body("username is required");
         }
-        if (request.getPassword() == null || request.getPassword().isBlank()) {
+        if (body.password() == null || body.password().isBlank()) {
+            log.warn("[createAdmin] validation failed: password empty");
             return ResponseEntity.badRequest().body("password is required");
         }
-        if (request.getRole() == null || request.getRole().isBlank()) {
-            return ResponseEntity.badRequest().body("role is required");
+        if (body.role() == null) {
+            log.warn("[createAdmin] validation failed: role null");
+            return ResponseEntity.badRequest().body("role is required (ADMIN or SUPER_ADMIN)");
         }
 
+        log.info("[createAdmin] calling service.save for username='{}', role={}", body.username(), body.role());
         try {
-            Role role = Role.valueOf(request.getRole().toUpperCase());
-            CreateAdminDTO dto = new CreateAdminDTO(
-                    request.getUsername().trim(),
-                    request.getPassword().trim(),
-                    role
-            );
-            adminUsersService.save(dto);
+            adminUsersService.save(body);
+            log.info("[createAdmin] success, created username='{}'", body.username());
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("role must be ADMIN or SUPER_ADMIN");
+            log.warn("[createAdmin] service validation failed: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+            log.error("[createAdmin] error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
 
@@ -150,28 +115,54 @@ public class AdminController {
         return ResponseEntity.ok(adminUsersService.getUsernames(isEnabled));
     }
 
-    /** Очистка всех записей из БД. Только SUPER_ADMIN. Вызывать POST /admin/clear/rank и т.д. */
+    /**
+     * Список сущностей, которые можно очистить.
+     * POST /admin/clear/{target} — очистка, target: rank | cases | main-news | mini-news
+     */
+    @GetMapping("/clear")
+    public ResponseEntity<Map<String, Object>> listClearTargets() {
+        log.info("[clear] GET list clear targets");
+        return ResponseEntity.ok(Map.of(
+                "targets", List.of("rank", "cases", "main-news", "mini-news"),
+                "description", Map.of(
+                        "rank", "Ранговые карточки (rank_cards)",
+                        "cases", "Кейсы (cases)",
+                        "main-news", "Главные новости (main_news)",
+                        "mini-news", "Мини-новости (mini_news)"
+                )
+        ));
+    }
+
+    /** Очистка: удаляются все записи из указанной таблицы. Только SUPER_ADMIN. */
     @PostMapping("/clear/rank")
-    public ResponseEntity<HttpStatus> clearRank() {
+    public ResponseEntity<Map<String, String>> clearRank() {
+        log.info("[clear] clear rank_cards");
         rankCardsService.deleteAll();
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        log.info("[clear] rank_cards cleared");
+        return ResponseEntity.ok(Map.of("cleared", "rank", "message", "Все ранговые карточки удалены"));
     }
 
     @PostMapping("/clear/cases")
-    public ResponseEntity<HttpStatus> clearCases() {
+    public ResponseEntity<Map<String, String>> clearCases() {
+        log.info("[clear] clear cases");
         casesService.deleteAll();
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        log.info("[clear] cases cleared");
+        return ResponseEntity.ok(Map.of("cleared", "cases", "message", "Все кейсы удалены"));
     }
 
     @PostMapping("/clear/main-news")
-    public ResponseEntity<HttpStatus> clearMainNews() {
+    public ResponseEntity<Map<String, String>> clearMainNews() {
+        log.info("[clear] clear main_news");
         mainNewsService.deleteAll();
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        log.info("[clear] main_news cleared");
+        return ResponseEntity.ok(Map.of("cleared", "main-news", "message", "Все главные новости удалены"));
     }
 
     @PostMapping("/clear/mini-news")
-    public ResponseEntity<HttpStatus> clearMiniNews() {
+    public ResponseEntity<Map<String, String>> clearMiniNews() {
+        log.info("[clear] clear mini_news");
         miniNewsService.deleteAll();
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        log.info("[clear] mini_news cleared");
+        return ResponseEntity.ok(Map.of("cleared", "mini-news", "message", "Все мини-новости удалены"));
     }
 }

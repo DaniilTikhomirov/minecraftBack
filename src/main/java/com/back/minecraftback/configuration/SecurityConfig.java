@@ -57,7 +57,6 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/admin/create",
-                                "/admin/create-v2",
                                 "/admin/enabled",
                                 "/admin",
                                 "/admin/data",

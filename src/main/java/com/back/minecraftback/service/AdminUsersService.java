@@ -3,12 +3,14 @@ package com.back.minecraftback.service;
 import com.back.minecraftback.dto.CreateAdminDTO;
 import com.back.minecraftback.entity.AdminUsersEntity;
 import com.back.minecraftback.mapper.AdminMapper;
+import com.back.minecraftback.model.Role;
 import com.back.minecraftback.repository.AdminUsersRepository;
 import com.back.minecraftback.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import static com.back.minecraftback.model.Token.REFRESH_TOKEN;
 import static com.back.minecraftback.model.TokenTime.JWT_TOKEN_TIME_IN_SECONDS;
 import static com.back.minecraftback.model.TokenTime.REFRESH_TOKEN_TIME_IN_SECONDS;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminUsersService {
@@ -45,33 +48,40 @@ public class AdminUsersService {
     }
 
     public void save(CreateAdminDTO createAdminDTO) {
-        System.out.println("=== AdminUsersService.save ===");
-        System.out.println("Received DTO: " + createAdminDTO);
+        log.info("[save] start CreateAdminDTO username='{}' role={}", createAdminDTO != null ? createAdminDTO.username() : null, createAdminDTO != null ? createAdminDTO.role() : null);
 
         if (createAdminDTO == null) {
+            log.error("[save] DTO is null");
             throw new IllegalArgumentException("createAdminDTO is null");
         }
 
-        System.out.println("Username: '" + createAdminDTO.username() + "'");
-        System.out.println("Password: '" + createAdminDTO.password() + "'");
-        System.out.println("Role: '" + createAdminDTO.role() + "'");
+        String username = createAdminDTO.username();
+        String password = createAdminDTO.password();
+        Role role = createAdminDTO.role();
 
-        if (createAdminDTO.password() == null || createAdminDTO.password().isBlank()) {
-            throw new IllegalArgumentException("password is required (in service)");
+        if (username == null || username.isBlank()) {
+            log.warn("[save] username empty");
+            throw new IllegalArgumentException("username is required");
         }
-        if (createAdminDTO.username() == null || createAdminDTO.username().isBlank()) {
-            throw new IllegalArgumentException("username is required (in service)");
+        if (password == null || password.isBlank()) {
+            log.warn("[save] password empty");
+            throw new IllegalArgumentException("password is required");
+        }
+        if (role == null) {
+            log.warn("[save] role null");
+            throw new IllegalArgumentException("role is required (ADMIN or SUPER_ADMIN)");
         }
 
+        log.debug("[save] mapping DTO to entity");
         AdminUsersEntity entity = adminMapper.toEntity(createAdminDTO);
-        System.out.println("Entity before encoding: " + entity);
 
-        String encodedPassword = passwordEncoder.encode(createAdminDTO.password());
-        System.out.println("Password encoded: " + encodedPassword);
-
+        log.debug("[save] encoding password");
+        String encodedPassword = passwordEncoder.encode(password);
         entity.setPassword(encodedPassword);
+
+        log.info("[save] saving entity username='{}' to repository", username);
         adminUsersRepository.save(entity);
-        System.out.println("Admin saved successfully");
+        log.info("[save] admin saved successfully username='{}'", username);
     }
 
     public boolean swapEnabled(String username) {
