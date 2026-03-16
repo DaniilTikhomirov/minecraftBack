@@ -1,23 +1,5 @@
 package com.back.minecraftback.controller;
 
-/**
- * Админ-контроллер. Требуется роль SUPER_ADMIN.
- *
- * База данных: PostgreSQL, схема mc_backend. Таблицы (ячейки — колонки):
- * - admin_users: id, username, password, role, enabled, created_at
- * - main_news: id, title, description, date, active, image_url
- * - mini_news: id, title, description, date, active, image_url
- * - rank_cards: id, title, image_url, price, description, active
- * - cases: id, title, subtitle, description, image_url, price, active
- * - transaction_log, paid_order, exchange_rate — остальные таблицы
- *
- * Очистка (удаление всех записей из таблицы):
- * GET /admin/clear — список доступных целей (rank, cases, main-news, mini-news)
- * POST /admin/clear/rank — очистить rank_cards
- * POST /admin/clear/cases — очистить cases
- * POST /admin/clear/main-news — очистить main_news
- * POST /admin/clear/mini-news — очистить mini_news
- */
 import com.back.minecraftback.dto.AllDataDto;
 import com.back.minecraftback.dto.CreateAdminDTO;
 import com.back.minecraftback.model.Role;
@@ -117,20 +99,19 @@ public class AdminController {
 
     /**
      * Список сущностей, которые можно очистить.
-     * POST /admin/clear/{target} — очистка, target: rank | cases | main-news | mini-news
+     * POST /admin/clear/rank, /admin/clear/cases, /admin/clear/main-news, /admin/clear/mini-news
      */
     @GetMapping("/clear")
-    public ResponseEntity<Map<String, Object>> listClearTargets() {
+    public ResponseEntity<?> listClearTargets() {
         log.info("[clear] GET list clear targets");
-        return ResponseEntity.ok(Map.of(
-                "targets", List.of("rank", "cases", "main-news", "mini-news"),
-                "description", Map.of(
-                        "rank", "Ранговые карточки (rank_cards)",
-                        "cases", "Кейсы (cases)",
-                        "main-news", "Главные новости (main_news)",
-                        "mini-news", "Мини-новости (mini_news)"
-                )
-        ));
+        try {
+            List<String> targets = List.of("rank", "cases", "main-news", "mini-news");
+            return ResponseEntity.ok(Map.of("targets", targets));
+        } catch (Exception e) {
+            log.error("[clear] GET error", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage() != null ? e.getMessage() : "Unknown error"));
+        }
     }
 
     /** Очистка: удаляются все записи из указанной таблицы. Только SUPER_ADMIN. */
