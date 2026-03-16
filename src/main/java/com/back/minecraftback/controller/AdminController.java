@@ -9,6 +9,7 @@ import com.back.minecraftback.service.MainNewsService;
 import com.back.minecraftback.service.MiniNewsService;
 import com.back.minecraftback.service.RankCardsService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin")
@@ -30,16 +32,26 @@ public class AdminController {
 
     @PostMapping(value = "/create", consumes = "application/json")
     public ResponseEntity<?> createAdmin(@RequestBody CreateAdminDTO createAdminDTO) {
-        if (createAdminDTO == null || createAdminDTO.password() == null || createAdminDTO.password().isBlank()) {
+        log.info("=== CREATE ADMIN REQUEST ===");
+        if (createAdminDTO == null) {
+            log.warn("Create admin: DTO is null");
+            return ResponseEntity.badRequest().body("DTO is null");
+        }
+        log.debug("Received username: '{}', role: '{}', password present: {}", createAdminDTO.username(), createAdminDTO.role(), createAdminDTO.password() != null && !createAdminDTO.password().isBlank());
+        if (createAdminDTO.password() == null || createAdminDTO.password().isBlank()) {
+            log.warn("Create admin: password is required (username: {})", createAdminDTO.username());
             return ResponseEntity.badRequest().body("password is required");
         }
         if (createAdminDTO.username() == null || createAdminDTO.username().isBlank()) {
+            log.warn("Create admin: username is required");
             return ResponseEntity.badRequest().body("username is required");
         }
         if (createAdminDTO.role() == null) {
+            log.warn("Create admin: role is required (username: {})", createAdminDTO.username());
             return ResponseEntity.badRequest().body("role is required (ADMIN or SUPER_ADMIN)");
         }
         adminUsersService.save(createAdminDTO);
+        log.info("Admin created successfully: username='{}', role='{}'", createAdminDTO.username(), createAdminDTO.role());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
