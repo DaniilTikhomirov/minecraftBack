@@ -2,7 +2,6 @@ package com.back.minecraftback.controller;
 
 import com.back.minecraftback.dto.AllDataDto;
 import com.back.minecraftback.dto.CreateAdminDTO;
-import com.back.minecraftback.model.Role;
 import com.back.minecraftback.service.AdminDataService;
 import com.back.minecraftback.service.AdminUsersService;
 import com.back.minecraftback.service.CasesService;
@@ -29,29 +28,18 @@ public class AdminController {
     private final MainNewsService mainNewsService;
     private final MiniNewsService miniNewsService;
 
-    @PostMapping(value = "/create", consumes = { "application/json", "application/x-www-form-urlencoded", "multipart/form-data" })
-    public ResponseEntity<?> createAdmin(
-            @RequestBody(required = false) CreateAdminDTO createAdminDTO,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String password,
-            @RequestParam(required = false) String role) {
-        CreateAdminDTO dto = createAdminDTO;
-        if (dto == null || dto.password() == null || dto.password().isBlank()) {
-            if (username != null && password != null && role != null && !password.isBlank() && !username.isBlank()) {
-                try {
-                    dto = new CreateAdminDTO(username, password, Role.valueOf(role.toUpperCase()));
-                } catch (IllegalArgumentException e) {
-                    return ResponseEntity.badRequest().body("role должен быть ADMIN или SUPER_ADMIN");
-                }
-            }
+    @PostMapping(value = "/create", consumes = "application/json")
+    public ResponseEntity<?> createAdmin(@RequestBody CreateAdminDTO createAdminDTO) {
+        if (createAdminDTO == null || createAdminDTO.password() == null || createAdminDTO.password().isBlank()) {
+            return ResponseEntity.badRequest().body("password is required");
         }
-        if (dto == null || dto.password() == null || dto.password().isBlank()) {
-            return ResponseEntity.badRequest().body("Нужны username, password, role. JSON: {\"username\":\"...\", \"password\":\"...\", \"role\":\"ADMIN\" или \"SUPER_ADMIN\"}. Content-Type: application/json");
+        if (createAdminDTO.username() == null || createAdminDTO.username().isBlank()) {
+            return ResponseEntity.badRequest().body("username is required");
         }
-        if (dto.username() == null || dto.username().isBlank()) {
-            return ResponseEntity.badRequest().body("username обязателен");
+        if (createAdminDTO.role() == null) {
+            return ResponseEntity.badRequest().body("role is required (ADMIN or SUPER_ADMIN)");
         }
-        adminUsersService.save(dto);
+        adminUsersService.save(createAdminDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
