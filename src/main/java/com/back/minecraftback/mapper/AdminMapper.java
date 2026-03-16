@@ -13,6 +13,7 @@ public interface AdminMapper {
     @Mappings({
             @Mapping(target = "password", ignore = true),
             @Mapping(target = "username", source = "username"),
+            @Mapping(target = "role", source = "role"),
             @Mapping(target = "enabled", expression = "java(true)")
     })
     AdminUsersEntity toEntity(CreateAdminDTO adminDto);

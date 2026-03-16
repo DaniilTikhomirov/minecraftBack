@@ -39,6 +39,11 @@ public class AdminUsersService {
         return adminUsersRepository.existsByUsername(username);
     }
 
+    /** Есть ли в БД хотя бы один админ (для восстановления при удалении всех). */
+    public boolean hasAnyAdmin() {
+        return adminUsersRepository.count() > 0;
+    }
+
     public void save(CreateAdminDTO createAdminDTO) {
         if (createAdminDTO == null || createAdminDTO.password() == null || createAdminDTO.password().isBlank())
             throw new IllegalArgumentException("password is required");
