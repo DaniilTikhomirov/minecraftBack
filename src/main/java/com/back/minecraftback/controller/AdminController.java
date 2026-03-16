@@ -2,6 +2,8 @@ package com.back.minecraftback.controller;
 
 import com.back.minecraftback.dto.AllDataDto;
 import com.back.minecraftback.dto.CreateAdminDTO;
+import com.back.minecraftback.dto.CreateAdminRequest;
+import com.back.minecraftback.model.Role;
 import com.back.minecraftback.service.AdminDataService;
 import com.back.minecraftback.service.AdminUsersService;
 import com.back.minecraftback.service.CasesService;
@@ -28,26 +30,99 @@ public class AdminController {
     private final MainNewsService mainNewsService;
     private final MiniNewsService miniNewsService;
 
-    @PostMapping(value = "/create", consumes = "application/json")
-    public ResponseEntity<?> createAdmin(@RequestBody(required = false) CreateAdminDTO createAdminDTO) {
-        if (createAdminDTO == null) {
-            return ResponseEntity.badRequest().body("Invalid request: send Content-Type: application/json and body {\"username\":\"...\",\"password\":\"...\",\"role\":\"ADMIN\" or \"SUPER_ADMIN\"}");
+    @PostMapping(value = "/create", consumes = { "application/json", "application/x-www-form-urlencoded" })
+    public ResponseEntity<?> createAdmin(@RequestBody(required = false) CreateAdminDTO createAdminDTO,
+                                          @RequestParam(required = false) String username,
+                                          @RequestParam(required = false) String password,
+                                          @RequestParam(required = false) String role) {
+
+        System.out.println("=== CREATE ADMIN DEBUG ===");
+        System.out.println("DTO: " + (createAdminDTO != null ? createAdminDTO : "null"));
+        System.out.println("Params - username: " + username);
+        System.out.println("Params - password: " + (password != null ? "present" : "null"));
+        System.out.println("Params - role: " + role);
+
+        try {
+            String finalUsername = null;
+            String finalPassword = null;
+            Role finalRole = null;
+
+            if (createAdminDTO != null) {
+                finalUsername = createAdminDTO.username();
+                finalPassword = createAdminDTO.password();
+                finalRole = createAdminDTO.role();
+            }
+
+            if ((finalUsername == null || finalUsername.isBlank()) && username != null && !username.isBlank()) {
+                finalUsername = username.trim();
+            }
+
+            if ((finalPassword == null || finalPassword.isBlank()) && password != null && !password.isBlank()) {
+                finalPassword = password.trim();
+            }
+
+            if (finalRole == null && role != null && !role.isBlank()) {
+                try {
+                    finalRole = Role.valueOf(role.trim().toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body("role must be ADMIN or SUPER_ADMIN");
+                }
+            }
+
+            if (finalUsername == null || finalUsername.isBlank()) {
+                return ResponseEntity.badRequest().body("username is required");
+            }
+
+            if (finalPassword == null || finalPassword.isBlank()) {
+                return ResponseEntity.badRequest().body("password is required");
+            }
+
+            if (finalRole == null) {
+                return ResponseEntity.badRequest().body("role is required (ADMIN or SUPER_ADMIN)");
+            }
+
+            CreateAdminDTO dtoToSave = new CreateAdminDTO(finalUsername, finalPassword, finalRole);
+            System.out.println("Saving admin with: " + dtoToSave);
+
+            adminUsersService.save(dtoToSave);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }
-        String username = createAdminDTO.username();
-        String password = createAdminDTO.password();
-        Object role = createAdminDTO.role();
-        boolean passwordPresent = password != null && !password.isBlank();
-        if (!passwordPresent) {
-            return ResponseEntity.badRequest().body("password is required (received: username='" + username + "', role=" + role + ", password=empty)");
+    }
+
+    @PostMapping(value = "/create-v2", consumes = "application/json")
+    public ResponseEntity<?> createAdminV2(@RequestBody CreateAdminRequest request) {
+        System.out.println("=== CREATE ADMIN V2 ===");
+        System.out.println("Request: " + request);
+
+        if (request.getUsername() == null || request.getUsername().isBlank()) {
+            return ResponseEntity.badRequest().body("username is required");
         }
-        if (username == null || username.isBlank()) {
-            return ResponseEntity.badRequest().body("username is required (received: username=empty, role=" + role + ", password=present)");
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            return ResponseEntity.badRequest().body("password is required");
         }
-        if (role == null) {
-            return ResponseEntity.badRequest().body("role is required, ADMIN or SUPER_ADMIN (received: username='" + username + "', role=null)");
+        if (request.getRole() == null || request.getRole().isBlank()) {
+            return ResponseEntity.badRequest().body("role is required");
         }
-        adminUsersService.save(createAdminDTO);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+
+        try {
+            Role role = Role.valueOf(request.getRole().toUpperCase());
+            CreateAdminDTO dto = new CreateAdminDTO(
+                    request.getUsername().trim(),
+                    request.getPassword().trim(),
+                    role
+            );
+            adminUsersService.save(dto);
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("role must be ADMIN or SUPER_ADMIN");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 
     @PutMapping("/enabled")

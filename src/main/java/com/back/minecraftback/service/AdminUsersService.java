@@ -45,16 +45,33 @@ public class AdminUsersService {
     }
 
     public void save(CreateAdminDTO createAdminDTO) {
-        if (createAdminDTO == null || createAdminDTO.password() == null || createAdminDTO.password().isBlank())
-            throw new IllegalArgumentException("password is required");
-        if (createAdminDTO.username() == null || createAdminDTO.username().isBlank())
-            throw new IllegalArgumentException("username is required");
-        String rawPassword = createAdminDTO.password();
-        if (rawPassword == null || rawPassword.isBlank())
-            throw new IllegalArgumentException("password is required");
+        System.out.println("=== AdminUsersService.save ===");
+        System.out.println("Received DTO: " + createAdminDTO);
+
+        if (createAdminDTO == null) {
+            throw new IllegalArgumentException("createAdminDTO is null");
+        }
+
+        System.out.println("Username: '" + createAdminDTO.username() + "'");
+        System.out.println("Password: '" + createAdminDTO.password() + "'");
+        System.out.println("Role: '" + createAdminDTO.role() + "'");
+
+        if (createAdminDTO.password() == null || createAdminDTO.password().isBlank()) {
+            throw new IllegalArgumentException("password is required (in service)");
+        }
+        if (createAdminDTO.username() == null || createAdminDTO.username().isBlank()) {
+            throw new IllegalArgumentException("username is required (in service)");
+        }
+
         AdminUsersEntity entity = adminMapper.toEntity(createAdminDTO);
-        entity.setPassword(passwordEncoder.encode(rawPassword));
+        System.out.println("Entity before encoding: " + entity);
+
+        String encodedPassword = passwordEncoder.encode(createAdminDTO.password());
+        System.out.println("Password encoded: " + encodedPassword);
+
+        entity.setPassword(encodedPassword);
         adminUsersRepository.save(entity);
+        System.out.println("Admin saved successfully");
     }
 
     public boolean swapEnabled(String username) {
