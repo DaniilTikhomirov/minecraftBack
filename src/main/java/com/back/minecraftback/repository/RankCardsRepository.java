@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface RankCardsRepository extends JpaRepository<RankCardsEntity, Long> {
     List<RankCardsEntity> findAllByActiveIsTrue();
+
+    List<RankCardsEntity> findAllByActiveIsFalse();
 }

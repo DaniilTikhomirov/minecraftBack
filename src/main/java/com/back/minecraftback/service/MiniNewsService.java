@@ -86,6 +86,10 @@ public class MiniNewsService {
         return newsMapper.toGetNewsDtoMini(miniNewsRepository.findAllByActiveIsTrue());
     }
 
+    public List<GetNewsDto> getAllInactive() {
+        return newsMapper.toGetNewsDtoMini(miniNewsRepository.findAllByActiveIsFalse());
+    }
+
     public void swapActive(long id){
         MiniNewsEntity entity = miniNewsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         entity.setActive(!entity.getActive());

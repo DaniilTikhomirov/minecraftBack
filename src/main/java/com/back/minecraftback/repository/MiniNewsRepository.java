@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface MiniNewsRepository extends JpaRepository<MiniNewsEntity, Long> {
     List<MiniNewsEntity> findAllByActiveIsTrue();
+
+    List<MiniNewsEntity> findAllByActiveIsFalse();
 }

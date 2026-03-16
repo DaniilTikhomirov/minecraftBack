@@ -88,6 +88,10 @@ public class MainNewsService {
         return newsMapper.toGetNewsDtoMain(mainNewsRepository.findAllByActiveIsTrue());
     }
 
+    public List<GetNewsDto> getAllInactive() {
+        return newsMapper.toGetNewsDtoMain(mainNewsRepository.findAllByActiveIsFalse());
+    }
+
     public void swapActive(long id){
         MainNewsEntity entity = mainNewsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         entity.setActive(!entity.getActive());

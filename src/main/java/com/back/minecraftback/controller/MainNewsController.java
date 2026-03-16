@@ -27,6 +27,11 @@ public class MainNewsController {
         return ResponseEntity.ok(mainNewsService.getAll());
     }
 
+    @GetMapping("/inactive")
+    public ResponseEntity<List<GetNewsDto>> getInactiveNews() {
+        return ResponseEntity.ok(mainNewsService.getAllInactive());
+    }
+
     @PutMapping("{id}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         mainNewsService.swapActive(id);

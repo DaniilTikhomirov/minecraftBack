@@ -88,6 +88,10 @@ public class CasesService {
         return mapper.toGetCasesDto(casesRepository.findAllByActiveIsTrue());
     }
 
+    public List<GetCasesDto> getAllInactive() {
+        return mapper.toGetCasesDto(casesRepository.findAllByActiveIsFalse());
+    }
+
     public void swapActive(long id){
         CasesEntity entity = casesRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         entity.setActive(!entity.getActive());

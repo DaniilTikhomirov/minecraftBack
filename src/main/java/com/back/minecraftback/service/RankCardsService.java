@@ -87,6 +87,10 @@ public class RankCardsService {
         return mapper.toGetRankDto(rankCardsRepository.findAllByActiveIsTrue());
     }
 
+    public List<GetRankDto> getAllInactive() {
+        return mapper.toGetRankDto(rankCardsRepository.findAllByActiveIsFalse());
+    }
+
     public void swapActive(long id){
         RankCardsEntity rankCardsEntity = rankCardsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         rankCardsEntity.setActive(!rankCardsEntity.getActive());

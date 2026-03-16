@@ -8,4 +8,6 @@ import java.util.List;
 public interface CasesRepository extends JpaRepository<CasesEntity, Long> {
 
     List<CasesEntity> findAllByActiveIsTrue();
+
+    List<CasesEntity> findAllByActiveIsFalse();
 }

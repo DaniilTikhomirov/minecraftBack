@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface MainNewsRepository extends JpaRepository<MainNewsEntity, Long> {
     List<MainNewsEntity> findAllByActiveIsTrue();
+
+    List<MainNewsEntity> findAllByActiveIsFalse();
 }
