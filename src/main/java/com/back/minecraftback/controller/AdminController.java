@@ -60,20 +60,23 @@ public class AdminController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * GET /admin — список логинов админов (query: isEnabled).
+     * GET /admin?data=full — всё содержимое БД для всплывающего окна (rankCards, cases, mainNews, miniNews).
+     */
     @GetMapping()
-    public ResponseEntity<List<String>> getAdminsUsername(@RequestParam(required = false) Optional<Boolean> isEnabled) {
+    public ResponseEntity<?> getAdmin(
+            @RequestParam(required = false) Optional<Boolean> isEnabled,
+            @RequestParam(required = false) String data) {
+        if ("full".equalsIgnoreCase(data)) {
+            AllDataDto dto = new AllDataDto(
+                    rankCardsService.getAllFromDb(),
+                    casesService.getAllFromDb(),
+                    mainNewsService.getAllFromDb(),
+                    miniNewsService.getAllFromDb()
+            );
+            return ResponseEntity.ok(dto);
+        }
         return ResponseEntity.ok(adminUsersService.getUsernames(isEnabled));
-    }
-
-    /** Всё содержимое БД для просмотра во всплывающем окне. Только SUPER_ADMIN. */
-    @GetMapping(value = { "/data", "/data/" })
-    public ResponseEntity<AllDataDto> getAllData() {
-        AllDataDto dto = new AllDataDto(
-                rankCardsService.getAllFromDb(),
-                casesService.getAllFromDb(),
-                mainNewsService.getAllFromDb(),
-                miniNewsService.getAllFromDb()
-        );
-        return ResponseEntity.ok(dto);
     }
 }
