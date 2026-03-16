@@ -7,6 +7,7 @@ import com.back.minecraftback.service.AdminUsersDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,6 +18,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -32,6 +36,25 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final JwtAuthenticationEntryPoint authEntryPoint;
     private final JwtAccessDeniedHandler accessDeniedHandler;
+
+    /** Пути входа и refresh — обрабатываются первой, без JWT. */
+    private static final RequestMatcher AUTH_PATHS = new OrRequestMatcher(
+            new AntPathRequestMatcher("/auth"),
+            new AntPathRequestMatcher("/auth/**"),
+            new AntPathRequestMatcher("/api/auth"),
+            new AntPathRequestMatcher("/api/auth/**")
+    );
+
+    @Bean
+    @org.springframework.core.annotation.Order(Ordered.HIGHEST_PRECEDENCE)
+    public SecurityFilterChain authOnlyFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher(AUTH_PATHS)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
