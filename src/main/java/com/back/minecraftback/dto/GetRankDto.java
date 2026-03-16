@@ -5,6 +5,7 @@ public record GetRankDto(
     String title,
     String imageUrl,
     Integer price,
-    String[] description
+    String[] description,
+    Boolean active
 ) {
 }

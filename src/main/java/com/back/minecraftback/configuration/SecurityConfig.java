@@ -58,7 +58,11 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/admin/create",
                                 "/admin/enabled",
-                                "/admin"
+                                "/admin",
+                                "/rank/clear",
+                                "/cases/clear",
+                                "/main-news/clear",
+                                "/mini-news/clear"
                         ).hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 ).exceptionHandling(ex -> ex

@@ -89,13 +89,21 @@ public class MainNewsService {
     }
 
     public List<GetNewsDto> getAllInactive() {
-        return newsMapper.toGetNewsDtoMain(mainNewsRepository.findAllInactive());
+        List<MainNewsEntity> inactive = mainNewsRepository.findAll().stream()
+                .filter(e -> !Boolean.TRUE.equals(e.getActive()))
+                .toList();
+        return newsMapper.toGetNewsDtoMain(inactive);
     }
 
-    public void swapActive(long id){
+    @Transactional
+    public void swapActive(long id) {
         MainNewsEntity entity = mainNewsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        entity.setActive(!entity.getActive());
-        mainNewsRepository.save(entity);
+        entity.setActive(!Boolean.TRUE.equals(entity.getActive()));
+        mainNewsRepository.saveAndFlush(entity);
     }
 
+    @Transactional
+    public void deleteAll() {
+        mainNewsRepository.deleteAll();
+    }
 }

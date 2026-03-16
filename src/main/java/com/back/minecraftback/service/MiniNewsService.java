@@ -87,13 +87,21 @@ public class MiniNewsService {
     }
 
     public List<GetNewsDto> getAllInactive() {
-        return newsMapper.toGetNewsDtoMini(miniNewsRepository.findAllInactive());
+        List<MiniNewsEntity> inactive = miniNewsRepository.findAll().stream()
+                .filter(e -> !Boolean.TRUE.equals(e.getActive()))
+                .toList();
+        return newsMapper.toGetNewsDtoMini(inactive);
     }
 
-    public void swapActive(long id){
+    @Transactional
+    public void swapActive(long id) {
         MiniNewsEntity entity = miniNewsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        entity.setActive(!entity.getActive());
-        miniNewsRepository.save(entity);
+        entity.setActive(!Boolean.TRUE.equals(entity.getActive()));
+        miniNewsRepository.saveAndFlush(entity);
     }
 
+    @Transactional
+    public void deleteAll() {
+        miniNewsRepository.deleteAll();
+    }
 }

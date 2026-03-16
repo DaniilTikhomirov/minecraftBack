@@ -43,4 +43,11 @@ public class RankCardController {
         rankCardsService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    /** Принудительно удалить ВСЕ карточки привилегий из БД. Только SUPER_ADMIN. */
+    @DeleteMapping("/clear")
+    public ResponseEntity<HttpStatus> clearAllRanks() {
+        rankCardsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

@@ -36,4 +36,11 @@ public class CasesController {
         casesService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /** Удалить ВСЕ кейсы из БД. Только SUPER_ADMIN. */
+    @DeleteMapping("/clear")
+    public ResponseEntity<HttpStatus> clearAllCases() {
+        casesService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

@@ -36,4 +36,11 @@ public class MiniNewsController {
         miniNewsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /** Удалить ВСЕ мини-новости из БД. Только SUPER_ADMIN. */
+    @DeleteMapping("/clear")
+    public ResponseEntity<HttpStatus> clearAllMiniNews() {
+        miniNewsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

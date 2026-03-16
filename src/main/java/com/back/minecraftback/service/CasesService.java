@@ -89,12 +89,21 @@ public class CasesService {
     }
 
     public List<GetCasesDto> getAllInactive() {
-        return mapper.toGetCasesDto(casesRepository.findAllInactive());
+        List<CasesEntity> inactive = casesRepository.findAll().stream()
+                .filter(e -> !Boolean.TRUE.equals(e.getActive()))
+                .toList();
+        return mapper.toGetCasesDto(inactive);
     }
 
-    public void swapActive(long id){
+    @Transactional
+    public void swapActive(long id) {
         CasesEntity entity = casesRepository.findById(id).orElseThrow(EntityNotFoundException::new);
-        entity.setActive(!entity.getActive());
-        casesRepository.save(entity);
+        entity.setActive(!Boolean.TRUE.equals(entity.getActive()));
+        casesRepository.saveAndFlush(entity);
+    }
+
+    @Transactional
+    public void deleteAll() {
+        casesRepository.deleteAll();
     }
 }

@@ -36,4 +36,11 @@ public class MainNewsController {
         mainNewsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /** Удалить ВСЕ главные новости из БД. Только SUPER_ADMIN. */
+    @DeleteMapping("/clear")
+    public ResponseEntity<HttpStatus> clearAllMainNews() {
+        mainNewsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

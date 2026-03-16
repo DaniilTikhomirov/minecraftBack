@@ -39,15 +39,19 @@ public interface CardsMapper {
     RankCardsEntity toRankCardsEntity(RankDto rank);
 
     @Mapping(target = "imageUrl", source = "imageUrl")
+    @Mapping(target = "active", source = "active")
     GetNewsDto toGetNewsDto(MainNewsEntity mainNewsEntity);
 
     @Mapping(target = "imageUrl", source = "imageUrl")
+    @Mapping(target = "active", source = "active")
     GetNewsDto toGetNewsDto(MiniNewsEntity miniNewsEntity);
 
     @Mapping(target = "imageUrl", source = "imageUrl")
+    @Mapping(target = "active", source = "active")
     GetCasesDto toGetCasesDto(CasesEntity casesEntity);
 
     @Mapping(target = "imageUrl", source = "imageUrl")
+    @Mapping(target = "active", source = "active")
     GetRankDto toGetRankDto(RankCardsEntity rankCardsEntity);
 
     List<GetNewsDto> toGetNewsDtoMain(List<MainNewsEntity> mainNewsEntity);

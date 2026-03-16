@@ -5,6 +5,7 @@ public record GetNewsDto(
         String title,
         String description,
         String date,
-        String imageUrl
+        String imageUrl,
+        Boolean active
 ) {
 }

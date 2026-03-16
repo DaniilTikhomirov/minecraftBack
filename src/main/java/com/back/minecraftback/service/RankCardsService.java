@@ -92,7 +92,11 @@ public class RankCardsService {
     }
 
     public List<GetRankDto> getAllInactive() {
-        return mapper.toGetRankDto(rankCardsRepository.findAllInactive());
+        List<RankCardsEntity> all = rankCardsRepository.findAll();
+        List<RankCardsEntity> inactive = all.stream()
+                .filter(e -> !Boolean.TRUE.equals(e.getActive()))
+                .toList();
+        return mapper.toGetRankDto(inactive);
     }
 
     @Transactional
@@ -108,5 +112,10 @@ public class RankCardsService {
             throw new EntityNotFoundException();
         }
         rankCardsRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void deleteAll() {
+        rankCardsRepository.deleteAll();
     }
 }
