@@ -32,7 +32,7 @@ public class MainNewsController {
         return ResponseEntity.ok(mainNewsService.getAllInactive());
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id:\\d+}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         mainNewsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);

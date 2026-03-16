@@ -17,7 +17,7 @@ public class AdminController {
     private final AdminUsersService adminUsersService;
 
     @PostMapping("/create")
-    public ResponseEntity<HttpStatus> createAdmin(CreateAdminDTO createAdminDTO) {
+    public ResponseEntity<HttpStatus> createAdmin(@RequestBody CreateAdminDTO createAdminDTO) {
         adminUsersService.save(createAdminDTO);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

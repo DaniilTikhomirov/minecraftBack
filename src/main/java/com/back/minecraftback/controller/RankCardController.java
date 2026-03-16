@@ -32,7 +32,7 @@ public class RankCardController {
         return ResponseEntity.ok(rankCardsService.getAllInactive());
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id:\\d+}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         rankCardsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);

@@ -32,7 +32,7 @@ public class CasesController {
         return ResponseEntity.ok(casesService.getAllInactive());
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id:\\d+}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         casesService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
