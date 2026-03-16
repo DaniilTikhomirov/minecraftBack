@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 @RestController
 @RequestMapping("cases")
 @RequiredArgsConstructor
@@ -31,16 +34,16 @@ public class CasesController {
         return ResponseEntity.ok(casesService.getAll());
     }
 
+    /** Удалить ВСЕ кейсы из БД. Только SUPER_ADMIN. POST или DELETE. */
+    @RequestMapping(value = "/clear", method = { DELETE, POST })
+    public ResponseEntity<HttpStatus> clearAllCases() {
+        casesService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         casesService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    /** Удалить ВСЕ кейсы из БД. Только SUPER_ADMIN. */
-    @DeleteMapping("/clear")
-    public ResponseEntity<HttpStatus> clearAllCases() {
-        casesService.deleteAll();
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

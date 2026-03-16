@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
+
 @RestController
 @RequestMapping("/rank")
 @RequiredArgsConstructor
@@ -31,6 +34,13 @@ public class RankCardController {
         return ResponseEntity.ok(rankCardsService.getAll());
     }
 
+    /** Принудительно удалить ВСЕ карточки привилегий из БД. Только SUPER_ADMIN. POST или DELETE. */
+    @RequestMapping(value = "/clear", method = { DELETE, POST })
+    public ResponseEntity<HttpStatus> clearAllRanks() {
+        rankCardsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<HttpStatus> swapActive(@PathVariable Long id) {
         rankCardsService.swapActive(id);
@@ -41,13 +51,6 @@ public class RankCardController {
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteRank(@PathVariable Long id) {
         rankCardsService.deleteById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /** Принудительно удалить ВСЕ карточки привилегий из БД. Только SUPER_ADMIN. */
-    @DeleteMapping("/clear")
-    public ResponseEntity<HttpStatus> clearAllRanks() {
-        rankCardsService.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

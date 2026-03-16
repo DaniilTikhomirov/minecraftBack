@@ -95,6 +95,11 @@ public class CasesService {
         return mapper.toGetCasesDto(inactive);
     }
 
+    /** Все кейсы из БД (активные + неактивные) для админ-просмотра. */
+    public List<GetCasesDto> getAllFromDb() {
+        return mapper.toGetCasesDto(casesRepository.findAll());
+    }
+
     @Transactional
     public void swapActive(long id) {
         CasesEntity entity = casesRepository.findById(id).orElseThrow(EntityNotFoundException::new);

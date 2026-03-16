@@ -93,6 +93,11 @@ public class MiniNewsService {
         return newsMapper.toGetNewsDtoMini(inactive);
     }
 
+    /** Все мини-новости из БД для админ-просмотра. */
+    public List<GetNewsDto> getAllFromDb() {
+        return newsMapper.toGetNewsDtoMini(miniNewsRepository.findAll());
+    }
+
     @Transactional
     public void swapActive(long id) {
         MiniNewsEntity entity = miniNewsRepository.findById(id).orElseThrow(EntityNotFoundException::new);

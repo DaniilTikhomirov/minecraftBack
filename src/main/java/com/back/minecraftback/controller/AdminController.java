@@ -1,8 +1,13 @@
 package com.back.minecraftback.controller;
 
+import com.back.minecraftback.dto.AllDataDto;
 import com.back.minecraftback.dto.CreateAdminDTO;
 import com.back.minecraftback.model.Role;
 import com.back.minecraftback.service.AdminUsersService;
+import com.back.minecraftback.service.CasesService;
+import com.back.minecraftback.service.MainNewsService;
+import com.back.minecraftback.service.MiniNewsService;
+import com.back.minecraftback.service.RankCardsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +21,10 @@ import java.util.Optional;
 @RequestMapping("admin")
 public class AdminController {
     private final AdminUsersService adminUsersService;
+    private final RankCardsService rankCardsService;
+    private final CasesService casesService;
+    private final MainNewsService mainNewsService;
+    private final MiniNewsService miniNewsService;
 
     @PostMapping(value = "/create", consumes = { "application/json", "application/x-www-form-urlencoded", "multipart/form-data" })
     public ResponseEntity<?> createAdmin(
@@ -54,5 +63,17 @@ public class AdminController {
     @GetMapping()
     public ResponseEntity<List<String>> getAdminsUsername(@RequestParam(required = false) Optional<Boolean> isEnabled) {
         return ResponseEntity.ok(adminUsersService.getUsernames(isEnabled));
+    }
+
+    /** Всё содержимое БД для просмотра во всплывающем окне. Только SUPER_ADMIN. */
+    @GetMapping("/data")
+    public ResponseEntity<AllDataDto> getAllData() {
+        AllDataDto dto = new AllDataDto(
+                rankCardsService.getAllFromDb(),
+                casesService.getAllFromDb(),
+                mainNewsService.getAllFromDb(),
+                miniNewsService.getAllFromDb()
+        );
+        return ResponseEntity.ok(dto);
     }
 }

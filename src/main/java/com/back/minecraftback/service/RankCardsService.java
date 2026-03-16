@@ -99,6 +99,11 @@ public class RankCardsService {
         return mapper.toGetRankDto(inactive);
     }
 
+    /** Все карточки из БД (активные + неактивные) для админ-просмотра. */
+    public List<GetRankDto> getAllFromDb() {
+        return mapper.toGetRankDto(rankCardsRepository.findAll());
+    }
+
     @Transactional
     public void swapActive(long id) {
         RankCardsEntity rankCardsEntity = rankCardsRepository.findById(id).orElseThrow(EntityNotFoundException::new);

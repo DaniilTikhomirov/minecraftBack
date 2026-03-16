@@ -95,6 +95,11 @@ public class MainNewsService {
         return newsMapper.toGetNewsDtoMain(inactive);
     }
 
+    /** Все главные новости из БД для админ-просмотра. */
+    public List<GetNewsDto> getAllFromDb() {
+        return newsMapper.toGetNewsDtoMain(mainNewsRepository.findAll());
+    }
+
     @Transactional
     public void swapActive(long id) {
         MainNewsEntity entity = mainNewsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
