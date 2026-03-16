@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("admin")
+@RequestMapping("/admin")
 public class AdminController {
     private final AdminUsersService adminUsersService;
     private final RankCardsService rankCardsService;
@@ -66,7 +66,7 @@ public class AdminController {
     }
 
     /** Всё содержимое БД для просмотра во всплывающем окне. Только SUPER_ADMIN. */
-    @GetMapping("/data")
+    @GetMapping(value = { "/data", "/data/" })
     public ResponseEntity<AllDataDto> getAllData() {
         AllDataDto dto = new AllDataDto(
                 rankCardsService.getAllFromDb(),

@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("main-news")
@@ -34,9 +31,15 @@ public class MainNewsController {
         return ResponseEntity.ok(mainNewsService.getAll());
     }
 
-    /** Удалить ВСЕ главные новости из БД. Только SUPER_ADMIN. POST или DELETE. */
-    @RequestMapping(value = "/clear", method = { DELETE, POST })
-    public ResponseEntity<HttpStatus> clearAllMainNews() {
+    /** Удалить ВСЕ главные новости из БД. Только SUPER_ADMIN. */
+    @DeleteMapping("/clear")
+    public ResponseEntity<HttpStatus> clearAllMainNewsDelete() {
+        mainNewsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/clear")
+    public ResponseEntity<HttpStatus> clearAllMainNewsPost() {
         mainNewsService.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

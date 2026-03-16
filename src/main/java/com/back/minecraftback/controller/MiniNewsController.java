@@ -10,9 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("mini-news")
@@ -34,9 +31,15 @@ public class MiniNewsController {
         return ResponseEntity.ok(miniNewsService.getAll());
     }
 
-    /** Удалить ВСЕ мини-новости из БД. Только SUPER_ADMIN. POST или DELETE. */
-    @RequestMapping(value = "/clear", method = { DELETE, POST })
-    public ResponseEntity<HttpStatus> clearAllMiniNews() {
+    /** Удалить ВСЕ мини-новости из БД. Только SUPER_ADMIN. */
+    @DeleteMapping("/clear")
+    public ResponseEntity<HttpStatus> clearAllMiniNewsDelete() {
+        miniNewsService.deleteAll();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/clear")
+    public ResponseEntity<HttpStatus> clearAllMiniNewsPost() {
         miniNewsService.deleteAll();
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
