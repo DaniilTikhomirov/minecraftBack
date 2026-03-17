@@ -20,6 +20,20 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AdminUsersService adminUsersService;
 
+    /** Отладка: GET без авторизации, возвращает какой путь видит бэкенд. Вызови и проверь. */
+    @GetMapping("/ping")
+    public ResponseEntity<?> ping(HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        String requestURI = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        return ResponseEntity.ok(java.util.Map.of(
+                "ok", true,
+                "servletPath", servletPath != null ? servletPath : "",
+                "requestURI", requestURI != null ? requestURI : "",
+                "contextPath", contextPath != null ? contextPath : ""
+        ));
+    }
+
     @PostMapping()
     public ResponseEntity<HttpStatus> auth(@RequestBody AuthDTO authDTO, HttpServletResponse response) {
         if (adminUsersService.authenticate(authDTO.username(), authDTO.password(), response))

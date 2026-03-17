@@ -18,8 +18,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -37,13 +35,18 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint authEntryPoint;
     private final JwtAccessDeniedHandler accessDeniedHandler;
 
-    /** Пути входа и refresh — обрабатываются первой, без JWT. */
-    private static final RequestMatcher AUTH_PATHS = new OrRequestMatcher(
-            new AntPathRequestMatcher("/auth"),
-            new AntPathRequestMatcher("/auth/**"),
-            new AntPathRequestMatcher("/api/auth"),
-            new AntPathRequestMatcher("/api/auth/**")
-    );
+    /** Пути входа и refresh — по любому варианту пути (servletPath и requestURI). */
+    private static final RequestMatcher AUTH_PATHS = (request) -> {
+        String path = request.getServletPath();
+        String uri = request.getRequestURI();
+        if (path != null) {
+            if (path.equals("/auth") || path.equals("/api/auth") || path.startsWith("/auth/") || path.startsWith("/api/auth/")) return true;
+        }
+        if (uri != null) {
+            if (uri.equals("/auth") || uri.equals("/api/auth") || uri.endsWith("/auth") || uri.contains("/auth/")) return true;
+        }
+        return false;
+    };
 
     @Bean
     @org.springframework.core.annotation.Order(Ordered.HIGHEST_PRECEDENCE)
