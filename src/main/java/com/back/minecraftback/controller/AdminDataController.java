@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Отдельный класс, чтобы маппинг GET /admin/data регистрировался явно.
  */
 @RestController
-@RequestMapping("/admin")
+@RequestMapping(value = { "/admin", "/api/admin" })
 @RequiredArgsConstructor
 public class AdminDataController {
 

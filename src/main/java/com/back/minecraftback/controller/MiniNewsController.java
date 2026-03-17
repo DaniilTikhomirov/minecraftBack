@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("mini-news")
+@RequestMapping(value = { "mini-news", "/api/mini-news" })
 public class MiniNewsController {
     private final MiniNewsService miniNewsService;
 

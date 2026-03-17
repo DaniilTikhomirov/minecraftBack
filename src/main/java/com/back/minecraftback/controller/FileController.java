@@ -13,7 +13,7 @@ import java.io.IOException;
 
 
 @RestController
-@RequestMapping("/files")
+@RequestMapping(value = { "/files", "/api/files" })
 @RequiredArgsConstructor
 public class FileController {
 

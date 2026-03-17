@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("cases")
+@RequestMapping(value = { "cases", "/api/cases" })
 @RequiredArgsConstructor
 public class CasesController {
     private final CasesService casesService;

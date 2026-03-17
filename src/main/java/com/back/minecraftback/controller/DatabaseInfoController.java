@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/db")
+@RequestMapping(value = { "/db", "/api/db" })
 public class DatabaseInfoController {
 
     private static final String SCHEMA = "mc_backend";

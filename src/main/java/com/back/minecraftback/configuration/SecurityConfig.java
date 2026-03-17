@@ -71,14 +71,14 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/webjars/**",
                                 "/auth", "/auth/**", "/api/auth", "/api/auth/**",
-                                "/files/**",
+                                "/files/**", "/api/files/**",
                                 "files/**",
                                 "actuator/**",
-                                "cases/get",
-                                "rate/get",
-                                "main-news/get",
-                                "mini-news/get",
-                                "rank/get"
+                                "cases/get", "/api/cases/get",
+                                "rate/get", "/api/rate/get",
+                                "main-news/get", "/api/main-news/get",
+                                "mini-news/get", "/api/mini-news/get",
+                                "rank/get", "/api/rank/get"
                         ).permitAll()
                         .requestMatchers(request -> {
                             String path = request.getServletPath();
@@ -88,16 +88,16 @@ public class SecurityConfig {
                             return isAuth;
                         }).permitAll()
                         .requestMatchers(
-                                "/admin/create",
-                                "/admin/enabled",
-                                "/admin",
-                                "/admin/data",
-                                "/admin/clear/**",
-                                "/rank/clear",
-                                "/cases/clear",
-                                "/main-news/clear",
-                                "/mini-news/clear",
-                                "/db/**"
+                                "/admin/create", "/api/admin/create",
+                                "/admin/enabled", "/api/admin/enabled",
+                                "/admin", "/api/admin",
+                                "/admin/data", "/api/admin/data",
+                                "/admin/clear/**", "/api/admin/clear/**",
+                                "/rank/clear", "/api/rank/clear",
+                                "/cases/clear", "/api/cases/clear",
+                                "/main-news/clear", "/api/main-news/clear",
+                                "/mini-news/clear", "/api/mini-news/clear",
+                                "/db/**", "/api/db/**"
                         ).hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 ).exceptionHandling(ex -> ex

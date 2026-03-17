@@ -22,7 +22,7 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin")
+@RequestMapping(value = { "/admin", "/api/admin" })
 public class AdminController {
 
     private final AdminUsersService adminUsersService;

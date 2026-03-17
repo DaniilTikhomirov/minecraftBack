@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/rate")
+@RequestMapping(value = { "/rate", "/api/rate" })
 @RequiredArgsConstructor
 public class ExchangeRateController {
     private final ExchangeRateService exchangeRateService;
