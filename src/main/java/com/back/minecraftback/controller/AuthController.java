@@ -36,6 +36,11 @@ public class AuthController {
 
     @PostMapping()
     public ResponseEntity<HttpStatus> auth(@RequestBody AuthDTO authDTO, HttpServletResponse response) {
+        if (authDTO == null
+                || authDTO.username() == null || authDTO.username().isBlank()
+                || authDTO.password() == null || authDTO.password().isBlank()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         if (adminUsersService.authenticate(authDTO.username(), authDTO.password(), response))
             return new ResponseEntity<>(HttpStatus.OK);
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

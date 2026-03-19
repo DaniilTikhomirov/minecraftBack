@@ -40,8 +40,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static boolean isAuthPath(String path) {
         if (path == null || path.isEmpty()) return false;
         String p = path.startsWith("/") ? path : "/" + path;
-        return p.equals("/auth") || p.startsWith("/auth/") ||
-                p.equals("/api/auth") || p.startsWith("/api/auth/");
+        return p.equals("/auth")
+                || p.startsWith("/auth/")
+                || p.equals("/api/auth")
+                || p.startsWith("/api/auth/")
+                || p.endsWith("/auth")
+                || p.endsWith("/api/auth")
+                || p.contains("/auth/");
     }
 
     @Override

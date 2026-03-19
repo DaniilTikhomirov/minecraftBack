@@ -104,6 +104,9 @@ public class AdminUsersService {
     }
 
     public boolean authenticate(String username, String password, HttpServletResponse response) {
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            return false;
+        }
         if (adminUsersRepository.findByUsername(username)
                 .map(user -> passwordEncoder.matches(password, user.getPassword()) && user.getEnabled())
                 .orElse(false)) {
