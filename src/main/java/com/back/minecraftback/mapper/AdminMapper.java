@@ -11,6 +11,7 @@ import org.mapstruct.Mappings;
 public interface AdminMapper {
 
     @Mappings({
+            @Mapping(target = "id", ignore = true),
             @Mapping(target = "password", ignore = true),
             @Mapping(target = "username", source = "username"),
             @Mapping(target = "role", source = "role"),

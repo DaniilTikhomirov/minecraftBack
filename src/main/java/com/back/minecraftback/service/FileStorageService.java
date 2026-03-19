@@ -1,6 +1,7 @@
 package com.back.minecraftback.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
@@ -16,6 +17,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FileStorageService {
 
     private final Tika tika;
@@ -47,7 +49,7 @@ public class FileStorageService {
                 Files.createDirectories(storageRoot);
             }
 
-            System.out.println("📁 File storage initialized at: " + storageRoot);
+            log.info("File storage initialized at: {}", storageRoot);
 
         } catch (IOException e) {
             throw new RuntimeException("Не удалось инициализировать директорию хранилища", e);

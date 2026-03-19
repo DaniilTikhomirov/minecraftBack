@@ -2,6 +2,7 @@ package com.back.minecraftback.controller;
 
 import com.back.minecraftback.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -15,6 +16,7 @@ import java.io.IOException;
 @RestController
 @RequestMapping(value = { "/files", "/api/files" })
 @RequiredArgsConstructor
+@Slf4j
 public class FileController {
 
     private final FileStorageService fileStorageService;
@@ -22,7 +24,7 @@ public class FileController {
 
     @GetMapping("/{filePath}")
     public ResponseEntity<Resource> getFile(@PathVariable String filePath) {
-        System.out.println(filePath);
+        log.debug("Fetching file by path: {}", filePath);
         Resource resource = fileStorageService.loadAsResource(filePath);
 
         String contentType;
