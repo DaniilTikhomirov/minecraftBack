@@ -35,17 +35,22 @@ public class AuthController {
     }
 
     @PostMapping()
-    public ResponseEntity<HttpStatus> auth(@RequestBody AuthDTO authDTO, HttpServletResponse response) {
+    public ResponseEntity<HttpStatus> auth(@RequestBody(required = false) AuthDTO authDTO, HttpServletResponse response) {
+        if (authDTO == null
+                || authDTO.username() == null || authDTO.username().isBlank()
+                || authDTO.password() == null || authDTO.password().isBlank()) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         if (adminUsersService.authenticate(authDTO.username(), authDTO.password(), response))
             return new ResponseEntity<>(HttpStatus.OK);
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     @GetMapping("/me")
-    public MeDto me(Authentication authentication) {
+    public ResponseEntity<MeDto> me(Authentication authentication) {
 
         if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails user)) {
-            return null; // или выбросить ошибку
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
 
         String username = user.getUsername();
@@ -58,7 +63,7 @@ public class AuthController {
                 .findFirst()
                 .orElse("ROLE_USER");
 
-        return new MeDto(username, role, enabled);
+        return ResponseEntity.ok(new MeDto(username, role, enabled));
     }
 
     @PostMapping("/logout")

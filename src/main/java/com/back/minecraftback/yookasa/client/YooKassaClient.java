@@ -19,12 +19,12 @@ public class YooKassaClient {
 
     private final RestTemplate restTemplate;
 
-    @Value("yookassa.url")
+    @Value("${yookassa.url:}")
     private String url;
 
-    @Value("yookassa.shop.id")
+    @Value("${yookassa.shop.id:}")
     private String shopId;
-    @Value("yookassa.secret.key")
+    @Value("${yookassa.secret.key:}")
     private String secretKey;
 
 

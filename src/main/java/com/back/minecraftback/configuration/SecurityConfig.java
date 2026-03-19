@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -34,6 +33,7 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final JwtAuthenticationEntryPoint authEntryPoint;
     private final JwtAccessDeniedHandler accessDeniedHandler;
+    private final PasswordEncoder passwordEncoder;
 
     /** Пути входа и refresh — по любому варианту пути (servletPath и requestURI). */
     private static final RequestMatcher AUTH_PATHS = (request) -> {
@@ -43,7 +43,7 @@ public class SecurityConfig {
             if (path.equals("/auth") || path.equals("/api/auth") || path.startsWith("/auth/") || path.startsWith("/api/auth/")) return true;
         }
         if (uri != null) {
-            if (uri.equals("/auth") || uri.equals("/api/auth") || uri.endsWith("/auth") || uri.contains("/auth/")) return true;
+            return uri.equals("/api/auth") || uri.endsWith("/auth") || uri.contains("/auth/");
         }
         return false;
     };
@@ -72,20 +72,18 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/auth", "/auth/**", "/api/auth", "/api/auth/**",
                                 "/files/**", "/api/files/**",
-                                "files/**",
-                                "actuator/**",
-                                "cases/get", "/api/cases/get",
-                                "rate/get", "/api/rate/get",
-                                "main-news/get", "/api/main-news/get",
-                                "mini-news/get", "/api/mini-news/get",
-                                "rank/get", "/api/rank/get"
+                                "/actuator/**",
+                                "/cases/get", "/api/cases/get",
+                                "/rate/get", "/api/rate/get",
+                                "/main-news/get", "/api/main-news/get",
+                                "/mini-news/get", "/api/mini-news/get",
+                                "/rank/get", "/api/rank/get"
                         ).permitAll()
                         .requestMatchers(request -> {
                             String path = request.getServletPath();
                             String uri = request.getRequestURI();
-                            boolean isAuth = (path != null && (path.equals("/auth") || path.startsWith("/auth/") || path.equals("/api/auth") || path.startsWith("/api/auth/")))
+                            return (path != null && (path.equals("/auth") || path.startsWith("/auth/") || path.equals("/api/auth") || path.startsWith("/api/auth/")))
                                     || (uri != null && (uri.endsWith("/auth") || uri.endsWith("/auth/") || uri.contains("/auth/")));
-                            return isAuth;
                         }).permitAll()
                         .requestMatchers(
                                 "/admin/create", "/api/admin/create",
@@ -113,13 +111,8 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         authBuilder.userDetailsService(adminUserDetailsService)
-                .passwordEncoder(passwordEncoder());
+                .passwordEncoder(passwordEncoder);
         return authBuilder.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

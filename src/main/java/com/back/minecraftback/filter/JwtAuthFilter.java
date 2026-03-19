@@ -40,8 +40,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static boolean isAuthPath(String path) {
         if (path == null || path.isEmpty()) return false;
         String p = path.startsWith("/") ? path : "/" + path;
-        return p.equals("/auth") || p.startsWith("/auth/") ||
-                p.equals("/api/auth") || p.startsWith("/api/auth/");
+        return p.startsWith("/auth/")
+                || p.startsWith("/api/auth/")
+                || p.endsWith("/auth")
+                || p.endsWith("/api/auth")
+                || p.contains("/auth/");
     }
 
     @Override
@@ -111,7 +114,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String newJwt = jwtUtil.generateJwtToken(userDetails);
                 Cookie newCookie = new Cookie(JWT_TOKEN.getToken(), newJwt);
                 newCookie.setHttpOnly(true);
-                newCookie.setSecure(false); // true на продакшене
+                newCookie.setSecure(true);
                 newCookie.setPath("/");
                 newCookie.setMaxAge(JWT_TOKEN_TIME_IN_SECONDS.getTime());
                 response.addCookie(newCookie);
