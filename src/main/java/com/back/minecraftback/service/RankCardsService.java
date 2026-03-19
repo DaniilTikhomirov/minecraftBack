@@ -92,11 +92,7 @@ public class RankCardsService {
     }
 
     public List<GetRankDto> getAllInactive() {
-        List<RankCardsEntity> all = rankCardsRepository.findAll();
-        List<RankCardsEntity> inactive = all.stream()
-                .filter(e -> !Boolean.TRUE.equals(e.getActive()))
-                .toList();
-        return mapper.toGetRankDto(inactive);
+        return mapper.toGetRankDto(rankCardsRepository.findAllInactive());
     }
 
     /** Все карточки из БД (активные + неактивные) для админ-просмотра. */

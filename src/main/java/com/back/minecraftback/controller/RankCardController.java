@@ -24,7 +24,17 @@ public class RankCardController {
 
     /** Активные: GET /rank/get. Неактивные: GET /rank/get?inactive=true */
     @GetMapping("/get")
-    public ResponseEntity<List<GetRankDto>> getRank(@RequestParam(name = "inactive", required = false, defaultValue = "false") boolean inactive) {
+    public ResponseEntity<List<GetRankDto>> getRank(
+            @RequestParam(name = "inactive", required = false, defaultValue = "false") boolean inactive,
+            @RequestParam(name = "active", required = false) Boolean active,
+            @RequestParam(name = "all", required = false, defaultValue = "false") boolean all
+    ) {
+        if (all) {
+            return ResponseEntity.ok(rankCardsService.getAllFromDb());
+        }
+        if (active != null) {
+            inactive = !active;
+        }
         if (inactive) {
             return ResponseEntity.ok(rankCardsService.getAllInactive());
         }
