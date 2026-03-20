@@ -30,16 +30,23 @@ public class RankCardsService {
     }
 
     private RankCardsEntity toEntity(RankDto dto) {
+        validateSubscriptionPricing(dto);
         if (isNew(dto)) {
             RankCardsEntity rankEntity = mapper.toRankCardsEntity(dto);
             rankEntity.setActive(true);
+            rankEntity.setAllowForever(Boolean.TRUE.equals(dto.allowForever()));
+            rankEntity.setPriceForever(Boolean.TRUE.equals(dto.allowForever()) ? dto.priceForever() : null);
             handleNewEntity(dto, rankEntity);
             return rankEntity;
         }
         RankCardsEntity existing = rankCardsRepository.findById(dto.id()).orElseThrow(EntityNotFoundException::new);
         RankCardsEntity fromDto = mapper.toRankCardsEntity(dto);
         existing.setTitle(fromDto.getTitle());
-        existing.setPrice(fromDto.getPrice());
+        existing.setPriceMonth(fromDto.getPriceMonth());
+        existing.setPriceThreeMonths(fromDto.getPriceThreeMonths());
+        existing.setPriceYear(fromDto.getPriceYear());
+        existing.setAllowForever(Boolean.TRUE.equals(fromDto.getAllowForever()));
+        existing.setPriceForever(Boolean.TRUE.equals(fromDto.getAllowForever()) ? fromDto.getPriceForever() : null);
         existing.setDescription(fromDto.getDescription());
         handleExistingEntity(dto, existing);
         return existing;
@@ -85,6 +92,31 @@ public class RankCardsService {
 
     private boolean isImageUnchanged(RankDto dto) {
         return Objects.isNull(dto.imageBase64());
+    }
+
+    private void validateSubscriptionPricing(RankDto dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("rank dto is required");
+        }
+        if (dto.priceMonth() == null || dto.priceMonth() <= 0) {
+            throw new IllegalArgumentException("priceMonth must be positive");
+        }
+        if (dto.priceThreeMonths() == null || dto.priceThreeMonths() <= 0) {
+            throw new IllegalArgumentException("priceThreeMonths must be positive");
+        }
+        if (dto.priceYear() == null || dto.priceYear() <= 0) {
+            throw new IllegalArgumentException("priceYear must be positive");
+        }
+        boolean allowForever = Boolean.TRUE.equals(dto.allowForever());
+        if (allowForever) {
+            if (dto.priceForever() == null || dto.priceForever() <= 0) {
+                throw new IllegalArgumentException("priceForever must be positive when allowForever=true");
+            }
+            return;
+        }
+        if (dto.priceForever() != null) {
+            throw new IllegalArgumentException("priceForever must be null when allowForever=false");
+        }
     }
 
     public List<GetRankDto> getAll() {

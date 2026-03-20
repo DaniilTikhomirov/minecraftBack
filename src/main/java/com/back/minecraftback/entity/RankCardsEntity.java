@@ -20,7 +20,20 @@ public class RankCardsEntity {
 
     private String imageUrl;
 
-    private Integer price;
+    @Column(name = "price_month")
+    private Integer priceMonth;
+
+    @Column(name = "price_three_months")
+    private Integer priceThreeMonths;
+
+    @Column(name = "price_year")
+    private Integer priceYear;
+
+    @Column(name = "allow_forever")
+    private Boolean allowForever = false;
+
+    @Column(name = "price_forever")
+    private Integer priceForever;
 
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(columnDefinition = "text[]")
