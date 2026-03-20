@@ -58,12 +58,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             if (token != null) {
-                handleJwtToken(token, request, response);
+                boolean jwtAuthenticated = handleJwtToken(token, request);
+                if (!jwtAuthenticated) {
+                    handleRefreshToken(request, response, cookies);
+                }
             } else {
                 handleRefreshToken(request, response, cookies);
             }
         } catch (RuntimeException e) {
-            // Ошибка токена или пользователя → выбрасываем наружу, чтобы GlobalExceptionHandler вернул 401/403
+            // Ошибка токена/пользователя: запрос не авторизован.
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
@@ -71,15 +74,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void handleJwtToken(String token, HttpServletRequest request, HttpServletResponse response) {
-        String username = jwtUtil.extractUsernameJwt(token);
+    private boolean handleJwtToken(String token, HttpServletRequest request) {
+        String username;
+        try {
+            username = jwtUtil.extractUsernameJwt(token);
+        } catch (RuntimeException ex) {
+            // Невалидный/просроченный access token: пробуем продолжить через refresh token.
+            return false;
+        }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             // Проверка токена
             if (!jwtUtil.validateTokenJwt(token, userDetails)) {
-                throw new RuntimeException("Invalid JWT token");
+                return false;
             }
 
             // Проверка, что пользователь включен
@@ -91,7 +100,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
+            return true;
         }
+        return false;
     }
 
     private void handleRefreshToken(HttpServletRequest request, HttpServletResponse response, Cookie[] cookies) {
@@ -116,10 +127,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 String newJwt = jwtUtil.generateJwtToken(userDetails);
                 Cookie newCookie = new Cookie(JWT_TOKEN.getToken(), newJwt);
                 newCookie.setHttpOnly(true);
-                newCookie.setSecure(false); // true на продакшене
+                newCookie.setSecure(true);
                 newCookie.setPath("/");
                 newCookie.setMaxAge(JWT_TOKEN_TIME_IN_SECONDS.getTime());
                 response.addCookie(newCookie);
+                response.addHeader("Set-Cookie",
+                        JWT_TOKEN.getToken() + "=" + newJwt + "; Path=/; Secure; HttpOnly; SameSite=None");
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

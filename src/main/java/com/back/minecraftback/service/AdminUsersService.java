@@ -6,7 +6,6 @@ import com.back.minecraftback.mapper.AdminMapper;
 import com.back.minecraftback.model.Role;
 import com.back.minecraftback.repository.AdminUsersRepository;
 import com.back.minecraftback.util.JwtUtil;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -115,28 +114,13 @@ public class AdminUsersService {
             String jwt = jwtUtil.generateJwtToken(userDetails);
             String refreshToken = jwtUtil.generateRefreshToken(userDetails);
 
-            // ====== ACCESS TOKEN COOKIE ======
-            Cookie jwtCookie = new Cookie(JWT_TOKEN.getToken(), jwt);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(true);           // HTTPS обязательно для SameSite=None
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(JWT_TOKEN_TIME_IN_SECONDS.getTime());
-            response.addCookie(jwtCookie);
-
-            // ====== REFRESH TOKEN COOKIE ======
-            Cookie refreshCookie = new Cookie(REFRESH_TOKEN.getToken(), refreshToken);
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(true);
-            refreshCookie.setPath("/");
-            refreshCookie.setMaxAge(REFRESH_TOKEN_TIME_IN_SECONDS.getTime());
-            response.addCookie(refreshCookie);
-
-            // ====== SameSite=None (ручной Set-Cookie) ======
+            // Единообразно выставляем cookie через Set-Cookie,
+            // чтобы гарантированно передавать SameSite=None.
             response.addHeader("Set-Cookie",
-                    JWT_TOKEN.getToken() + "=" + jwt + "; Path=/; Secure; HttpOnly; SameSite=None");
+                    JWT_TOKEN.getToken() + "=" + jwt + "; Path=/; Max-Age=" + JWT_TOKEN_TIME_IN_SECONDS.getTime() + "; Secure; HttpOnly; SameSite=None");
 
             response.addHeader("Set-Cookie",
-                    REFRESH_TOKEN.getToken() + "=" + refreshToken + "; Path=/; Secure; HttpOnly; SameSite=None");
+                    REFRESH_TOKEN.getToken() + "=" + refreshToken + "; Path=/; Max-Age=" + REFRESH_TOKEN_TIME_IN_SECONDS.getTime() + "; Secure; HttpOnly; SameSite=None");
 
             return true;
         } else {
@@ -173,17 +157,9 @@ public class AdminUsersService {
 
                 String jwtToken = jwtUtil.generateJwtToken(userDetails);
 
-                // ===== COOKIE через API =====
-                Cookie jwtCookie = new Cookie(JWT_TOKEN.getToken(), jwtToken);
-                jwtCookie.setHttpOnly(true);
-                jwtCookie.setSecure(true);      // обязательно для SameSite=None
-                jwtCookie.setPath("/");
-                jwtCookie.setMaxAge(JWT_TOKEN_TIME_IN_SECONDS.getTime());
-                response.addCookie(jwtCookie);
-
-                // ===== SameSite=None (ручной Set-Cookie) =====
+                // Единообразно выставляем access-cookie с SameSite=None.
                 response.addHeader("Set-Cookie",
-                        JWT_TOKEN.getToken() + "=" + jwtToken + "; Path=/; Secure; HttpOnly; SameSite=None");
+                        JWT_TOKEN.getToken() + "=" + jwtToken + "; Path=/; Max-Age=" + JWT_TOKEN_TIME_IN_SECONDS.getTime() + "; Secure; HttpOnly; SameSite=None");
 
                 return true;
             }
