@@ -35,16 +35,12 @@ CREATE TABLE admin_users
 -- changeset danil:create_slider_cards
 CREATE TABLE rank_cards
 (
-    id                 BIGSERIAL PRIMARY KEY,
-    title              VARCHAR(255) UNIQUE NOT NULL,
-    image_url          VARCHAR(5000),
-    price_month        INT NOT NULL,
-    price_three_months INT NOT NULL,
-    price_year         INT NOT NULL,
-    allow_forever      BOOLEAN DEFAULT FALSE NOT NULL,
-    price_forever      INT,
-    description        TEXT[] NOT NULL,
-    active             BOOLEAN DEFAULT TRUE NOT NULL
+    id          BIGSERIAL PRIMARY KEY,
+    title       VARCHAR(255) UNIQUE NOT NULL,
+    image_url   VARCHAR(5000),
+    price       INT NOT NULL,
+    description TEXT[] NOT NULL,
+    active      BOOLEAN DEFAULT TRUE NOT NULL
 );
 
 
