@@ -49,4 +49,11 @@ public class MainNewsController {
         mainNewsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /** Удалить одну главную новость по id. Только SUPER_ADMIN. */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteNews(@PathVariable Long id) {
+        mainNewsService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

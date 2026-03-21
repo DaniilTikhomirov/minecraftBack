@@ -113,4 +113,11 @@ public class CasesService {
     public void deleteAll() {
         casesRepository.deleteAll();
     }
+
+    @Transactional
+    public void deleteById(long id) {
+        CasesEntity entity = casesRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        fileStorageService.deleteStoredFileIfExists(entity.getImageUrl());
+        casesRepository.delete(entity);
+    }
 }

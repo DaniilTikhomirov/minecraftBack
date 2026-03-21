@@ -1,6 +1,7 @@
 package com.back.minecraftback.repository;
 
 import com.back.minecraftback.entity.AdminUsersEntity;
+import com.back.minecraftback.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,4 +11,6 @@ public interface AdminUsersRepository extends JpaRepository<AdminUsersEntity, Lo
     Optional<AdminUsersEntity> findByUsername(String username);
     boolean existsByUsername(String username);
     List<AdminUsersEntity> findAllByEnabled(boolean enabled);
+
+    long countByRole(Role role);
 }

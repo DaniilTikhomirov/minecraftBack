@@ -143,11 +143,11 @@ public class RankCardsService {
         rankCardsRepository.saveAndFlush(rankCardsEntity);
     }
 
+    @Transactional
     public void deleteById(long id) {
-        if (!rankCardsRepository.existsById(id)) {
-            throw new EntityNotFoundException();
-        }
-        rankCardsRepository.deleteById(id);
+        RankCardsEntity entity = rankCardsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        fileStorageService.deleteStoredFileIfExists(entity.getImageUrl());
+        rankCardsRepository.delete(entity);
     }
 
     @Transactional

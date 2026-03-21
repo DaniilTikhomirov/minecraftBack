@@ -5,7 +5,9 @@ import com.back.minecraftback.entity.AdminUsersEntity;
 import com.back.minecraftback.mapper.AdminMapper;
 import com.back.minecraftback.model.Role;
 import com.back.minecraftback.repository.AdminUsersRepository;
+import com.back.minecraftback.util.AdminUsernamePolicy;
 import com.back.minecraftback.util.JwtUtil;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,14 +58,10 @@ public class AdminUsersService {
             throw new IllegalArgumentException("createAdminDTO is null");
         }
 
-        String username = createAdminDTO.username();
+        String username = AdminUsernamePolicy.requireValidUsername(createAdminDTO.username());
         String password = createAdminDTO.password();
         Role role = createAdminDTO.role();
 
-        if (username == null || username.isBlank()) {
-            log.warn("[save] username empty");
-            throw new IllegalArgumentException("username is required");
-        }
         if (password == null || password.isBlank()) {
             log.warn("[save] password empty");
             throw new IllegalArgumentException("password is required");
@@ -74,6 +73,7 @@ public class AdminUsersService {
 
         log.debug("[save] mapping DTO to entity");
         AdminUsersEntity entity = adminMapper.toEntity(createAdminDTO);
+        entity.setUsername(username);
 
         log.debug("[save] encoding password");
         String encodedPassword = passwordEncoder.encode(password);
@@ -167,6 +167,35 @@ public class AdminUsersService {
         }
 
         return false;
+    }
+
+    /**
+     * Удаление аккаунта админа. Только для вызова из контроллера под SUPER_ADMIN (проверка в Security).
+     */
+    @Transactional
+    public void deleteAdminAccount(String targetUsernameRaw, String actorUsername) {
+        String target = AdminUsernamePolicy.requireValidUsername(targetUsernameRaw);
+        if (actorUsername == null || actorUsername.isBlank()) {
+            throw new IllegalArgumentException("actor username is required");
+        }
+        if (target.equals(actorUsername)) {
+            throw new IllegalArgumentException("cannot delete your own account");
+        }
+        AdminUsersEntity victim = adminUsersRepository.findByUsername(target)
+                .orElseThrow(() -> new EntityNotFoundException("admin user not found"));
+
+        long total = adminUsersRepository.count();
+        if (total <= 1) {
+            throw new IllegalStateException("cannot delete the last admin account");
+        }
+        if (victim.getRole() == Role.SUPER_ADMIN) {
+            long supers = adminUsersRepository.countByRole(Role.SUPER_ADMIN);
+            if (supers <= 1) {
+                throw new IllegalStateException("cannot delete the last SUPER_ADMIN");
+            }
+        }
+        adminUsersRepository.delete(victim);
+        log.info("Admin account deleted: target={}, actor={}", target, actorUsername);
     }
 
 }

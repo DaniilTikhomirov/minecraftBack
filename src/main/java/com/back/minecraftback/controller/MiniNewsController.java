@@ -49,4 +49,11 @@ public class MiniNewsController {
         miniNewsService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /** Удалить одну мини-новость по id. Только SUPER_ADMIN. */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteNews(@PathVariable Long id) {
+        miniNewsService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

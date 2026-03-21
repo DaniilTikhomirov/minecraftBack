@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -96,6 +97,13 @@ public class SecurityConfig {
                                 "/main-news/clear", "/api/main-news/clear",
                                 "/mini-news/clear", "/api/mini-news/clear",
                                 "/db/**", "/api/db/**"
+                        ).hasRole("SUPER_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/rank/*", "/api/rank/*",
+                                "/cases/*", "/api/cases/*",
+                                "/main-news/*", "/api/main-news/*",
+                                "/mini-news/*", "/api/mini-news/*",
+                                "/admin/user/*", "/api/admin/user/*"
                         ).hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 ).exceptionHandling(ex -> ex

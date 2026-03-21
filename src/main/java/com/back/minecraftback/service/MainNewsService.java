@@ -113,4 +113,11 @@ public class MainNewsService {
     public void deleteAll() {
         mainNewsRepository.deleteAll();
     }
+
+    @Transactional
+    public void deleteById(long id) {
+        MainNewsEntity entity = mainNewsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        fileStorageService.deleteStoredFileIfExists(entity.getImageUrl());
+        mainNewsRepository.delete(entity);
+    }
 }

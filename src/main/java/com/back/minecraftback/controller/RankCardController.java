@@ -60,7 +60,7 @@ public class RankCardController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    /** Удалить карточку навсегда (активную или неактивную). */
+    /** Удалить карточку привилегии по id. Только SUPER_ADMIN (см. SecurityConfig). */
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteRank(@PathVariable Long id) {
         rankCardsService.deleteById(id);

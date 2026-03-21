@@ -49,4 +49,11 @@ public class CasesController {
         casesService.swapActive(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /** Удалить один кейс по id. Только SUPER_ADMIN (см. SecurityConfig). */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deleteCase(@PathVariable Long id) {
+        casesService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

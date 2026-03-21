@@ -41,6 +41,12 @@ public class GlobalExceptionHandler {
                 .body("Bad request: " + message);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<String> handleConflict(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body("Conflict: " + (ex.getMessage() != null ? ex.getMessage() : "operation not allowed"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneralError(Exception ex) {
         log.error("Unhandled server error", ex);

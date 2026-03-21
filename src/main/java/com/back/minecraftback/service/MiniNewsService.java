@@ -3,7 +3,6 @@ package com.back.minecraftback.service;
 import com.back.minecraftback.dto.GetNewsDto;
 import com.back.minecraftback.dto.NewsDTO;
 import com.back.minecraftback.entity.MiniNewsEntity;
-import com.back.minecraftback.entity.RankCardsEntity;
 import com.back.minecraftback.mapper.CardsMapper;
 import com.back.minecraftback.repository.MiniNewsRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -108,5 +107,12 @@ public class MiniNewsService {
     @Transactional
     public void deleteAll() {
         miniNewsRepository.deleteAll();
+    }
+
+    @Transactional
+    public void deleteById(long id) {
+        MiniNewsEntity entity = miniNewsRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        fileStorageService.deleteStoredFileIfExists(entity.getImageUrl());
+        miniNewsRepository.delete(entity);
     }
 }

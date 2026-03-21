@@ -112,6 +112,26 @@ public class FileStorageService {
         }
     }
 
+    /**
+     * Удаляет файл внутри {@link #storageRoot} по относительному пути из БД. Безопасно при подставленном из БД значении:
+     * нормализация и проверка, что путь не выходит за пределы хранилища.
+     */
+    public void deleteStoredFileIfExists(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) {
+            return;
+        }
+        try {
+            Path filePath = storageRoot.resolve(relativePath).normalize();
+            if (!filePath.startsWith(storageRoot)) {
+                log.warn("Skip delete: path escapes storage root: {}", relativePath);
+                return;
+            }
+            Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            log.warn("Could not delete stored file {}: {}", relativePath, e.getMessage());
+        }
+    }
+
     private String detectType(byte[] data) {
         return tika.detect(data);
     }
