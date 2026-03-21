@@ -39,5 +39,9 @@ public class RankCardsEntity {
     @Column(columnDefinition = "text[]")
     private String[] description;
 
+    /** Подробное описание (длинный текст). */
+    @Column(name = "detailed_description", columnDefinition = "text")
+    private String detailedDescription;
+
     private Boolean active = true;
 }

@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/v3/drop-rank-cards-title-unique-robust.sql
   - include:
       file: db/changelog/v4/rank-cards-subscription-pricing.sql
+  - include:
+      file: db/changelog/v5/detailed-description-text.sql

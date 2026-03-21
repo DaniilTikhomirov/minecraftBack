@@ -6,6 +6,7 @@ import com.back.minecraftback.entity.MainNewsEntity;
 import com.back.minecraftback.entity.MiniNewsEntity;
 import com.back.minecraftback.mapper.CardsMapper;
 import com.back.minecraftback.repository.MainNewsRepository;
+import com.back.minecraftback.util.TextValidation;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class MainNewsService {
     }
 
     private MainNewsEntity toEntity(NewsDTO dto) {
+        TextValidation.requireDetailedDescriptionLength(dto.detailedDescription());
         MainNewsEntity newsEntity = newsMapper.toMainNewsEntity(dto);
 
         if (isNew(dto)) {

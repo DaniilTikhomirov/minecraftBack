@@ -6,6 +6,7 @@ import com.back.minecraftback.entity.CasesEntity;
 import com.back.minecraftback.entity.MainNewsEntity;
 import com.back.minecraftback.mapper.CardsMapper;
 import com.back.minecraftback.repository.CasesRepository;
+import com.back.minecraftback.util.TextValidation;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class CasesService {
     }
 
     private CasesEntity toEntity(CasesDto dto) {
+        TextValidation.requireDetailedDescriptionLength(dto.detailedDescription());
         CasesEntity casesEntity = mapper.toCasesEntity(dto);
 
         if (isNew(dto)) {

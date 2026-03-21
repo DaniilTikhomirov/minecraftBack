@@ -10,6 +10,7 @@ public record GetRankDto(
     Boolean allowForever,
     Integer priceForever,
     String[] description,
+    String detailedDescription,
     Boolean active
 ) {
 }

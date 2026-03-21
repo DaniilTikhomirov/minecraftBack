@@ -5,6 +5,7 @@ import com.back.minecraftback.entity.CasesEntity;
 import com.back.minecraftback.entity.MainNewsEntity;
 import com.back.minecraftback.entity.MiniNewsEntity;
 import com.back.minecraftback.entity.RankCardsEntity;
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
@@ -20,6 +21,7 @@ public interface CardsMapper {
     })
     MainNewsEntity toMainNewsEntity(NewsDTO news);
 
+    @BeanMapping(ignoreUnmappedSourceProperties = "detailedDescription")
     @Mappings({
             @Mapping(target = "active", ignore = true),
             @Mapping(target = "imageUrl", ignore = true)
@@ -42,6 +44,7 @@ public interface CardsMapper {
     @Mapping(target = "active", source = "active")
     GetNewsDto toGetNewsDto(MainNewsEntity mainNewsEntity);
 
+    @Mapping(target = "detailedDescription", ignore = true)
     @Mapping(target = "imageUrl", source = "imageUrl")
     @Mapping(target = "active", source = "active")
     GetNewsDto toGetNewsDto(MiniNewsEntity miniNewsEntity);

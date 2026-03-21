@@ -5,6 +5,7 @@ import com.back.minecraftback.dto.RankDto;
 import com.back.minecraftback.entity.RankCardsEntity;
 import com.back.minecraftback.mapper.CardsMapper;
 import com.back.minecraftback.repository.RankCardsRepository;
+import com.back.minecraftback.util.TextValidation;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,7 @@ public class RankCardsService {
 
     private RankCardsEntity toEntity(RankDto dto) {
         validateSubscriptionPricing(dto);
+        TextValidation.requireDetailedDescriptionLength(dto.detailedDescription());
         if (isNew(dto)) {
             RankCardsEntity rankEntity = mapper.toRankCardsEntity(dto);
             rankEntity.setActive(true);
@@ -48,6 +50,7 @@ public class RankCardsService {
         existing.setAllowForever(Boolean.TRUE.equals(fromDto.getAllowForever()));
         existing.setPriceForever(Boolean.TRUE.equals(fromDto.getAllowForever()) ? fromDto.getPriceForever() : null);
         existing.setDescription(fromDto.getDescription());
+        existing.setDetailedDescription(fromDto.getDetailedDescription());
         handleExistingEntity(dto, existing);
         return existing;
     }

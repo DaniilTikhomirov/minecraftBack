@@ -18,6 +18,9 @@ public class MainNewsEntity {
 
     private String description;
 
+    @Column(name = "detailed_description", columnDefinition = "text")
+    private String detailedDescription;
+
     private String date;
 
     private String imageUrl;

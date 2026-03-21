@@ -5,6 +5,7 @@ public record GetCasesDto(
     String title,
     String subtitle,
     String description,
+    String detailedDescription,
     String imageUrl,
     Integer price,
     Boolean active

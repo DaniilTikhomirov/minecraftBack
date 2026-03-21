@@ -19,6 +19,9 @@ public class CasesEntity {
 
     private String description;
 
+    @Column(name = "detailed_description", columnDefinition = "text")
+    private String detailedDescription;
+
     private String imageUrl;
 
     private Integer price;

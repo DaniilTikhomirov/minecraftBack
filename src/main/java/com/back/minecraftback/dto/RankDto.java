@@ -9,6 +9,7 @@ public record RankDto(
         Boolean allowForever,
         Integer priceForever,
         String[] description,
+        String detailedDescription,
         String imageUrl,
         String imageBase64
 ) {
