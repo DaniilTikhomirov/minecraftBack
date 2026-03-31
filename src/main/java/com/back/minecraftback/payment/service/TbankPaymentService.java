@@ -114,33 +114,26 @@ public class TbankPaymentService {
             Integer quantity,
             RankSubscriptionPeriod period
     ) {
-        Map<String, String> forToken = new HashMap<>();
-        forToken.put("TerminalKey", properties.terminalKey());
-        forToken.put("Amount", String.valueOf(amountKopecks));
-        forToken.put("OrderId", orderId);
+        String terminalKey = properties.terminalKey();
+        // Amount в строковом виде для токена и в числовом виде для JSON
+        String amountStr = String.valueOf(amountKopecks);
         String description = buildDescription(nickname, type, itemId, quantity, period);
-        forToken.put("Description", description);
 
-        if (properties.successUrl() != null && !properties.successUrl().isBlank()) {
-            forToken.put("SuccessURL", properties.successUrl());
-        }
-        if (properties.failUrl() != null && !properties.failUrl().isBlank()) {
-            forToken.put("FailURL", properties.failUrl());
-        }
-        if (properties.notificationUrl() != null && !properties.notificationUrl().isBlank()) {
-            forToken.put("NotificationURL", properties.notificationUrl());
-        }
-
-        forToken.put("Language", "ru");
-        forToken.put("PayType", "O");
-
-        String token = TbankTokenSigner.sign(forToken, properties.password());
+        // Токен в порядке Amount + Description + OrderId + TerminalKey + Password
+        String token = TbankTokenSigner.signInitMinimal(
+                terminalKey,
+                amountStr,
+                orderId,
+                description,
+                properties.password()
+        );
 
         Map<String, Object> json = new HashMap<>();
-        json.put("TerminalKey", properties.terminalKey());
-        json.put("Amount", amountKopecks);
+        json.put("TerminalKey", terminalKey);
+        json.put("Amount", amountKopecks); // серверу можно отправлять числом
         json.put("OrderId", orderId);
-        json.put("Description", description);
+        json.put("Description", description.length() <= 35 ? description : description.substring(0, 35));
+
         if (properties.successUrl() != null && !properties.successUrl().isBlank()) {
             json.put("SuccessURL", properties.successUrl());
         }
@@ -150,8 +143,7 @@ public class TbankPaymentService {
         if (properties.notificationUrl() != null && !properties.notificationUrl().isBlank()) {
             json.put("NotificationURL", properties.notificationUrl());
         }
-        json.put("Language", "ru");
-        json.put("PayType", "O");
+
         json.put("Token", token);
         return json;
     }

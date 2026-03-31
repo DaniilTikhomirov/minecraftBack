@@ -17,6 +17,10 @@ public final class TbankTokenSigner {
     private TbankTokenSigner() {
     }
 
+    /**
+     * Общая схема: сортировка по ключу (лексикографически), конкатенация значений + Password.
+     * Используется для уведомлений и универсальных запросов.
+     */
     public static String sign(Map<String, String> rootParamsWithoutTokenAndPassword, String password) {
         TreeMap<String, String> sorted = new TreeMap<>(rootParamsWithoutTokenAndPassword);
         sorted.put("Password", password);
@@ -25,6 +29,23 @@ public final class TbankTokenSigner {
             sb.append(value);
         }
         return sha256Hex(sb.toString());
+    }
+
+    /**
+     * Специальная схема для Init, повторяющая порядок из интеграционных примеров:
+     * Amount + Description + OrderId + TerminalKey + Password.
+     */
+    public static String signInitMinimal(String terminalKey,
+                                         String amount,
+                                         String orderId,
+                                         String description,
+                                         String password) {
+        String tokenString = (amount != null ? amount : "")
+                + (description != null ? description : "")
+                + (orderId != null ? orderId : "")
+                + (terminalKey != null ? terminalKey : "")
+                + (password != null ? password : "");
+        return sha256Hex(tokenString);
     }
 
     public static boolean constantTimeEquals(String expectedHex, String actualHex) {
