@@ -9,6 +9,7 @@ import com.back.minecraftback.service.CasesService;
 import com.back.minecraftback.service.MainNewsService;
 import com.back.minecraftback.service.MiniNewsService;
 import com.back.minecraftback.service.RankCardsService;
+import com.back.minecraftback.wiki.service.WikiCardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,7 @@ public class AdminController {
     private final CasesService casesService;
     private final MainNewsService mainNewsService;
     private final MiniNewsService miniNewsService;
+    private final WikiCardService wikiCardService;
 
     /**
      * Создание админа. Только JSON.
@@ -114,13 +116,13 @@ public class AdminController {
 
     /**
      * Список сущностей, которые можно очистить.
-     * POST /admin/clear/rank, /admin/clear/cases, /admin/clear/main-news, /admin/clear/mini-news
+     * POST /admin/clear/rank, /admin/clear/cases, /admin/clear/main-news, /admin/clear/mini-news, /admin/clear/wiki
      */
     @GetMapping("/clear")
     public ResponseEntity<?> listClearTargets() {
         log.info("[clear] GET list clear targets");
         try {
-            List<String> targets = List.of("rank", "cases", "main-news", "mini-news");
+            List<String> targets = List.of("rank", "cases", "main-news", "mini-news", "wiki");
             return ResponseEntity.ok(Map.of("targets", targets));
         } catch (Exception e) {
             log.error("[clear] GET error", e);
@@ -160,5 +162,13 @@ public class AdminController {
         miniNewsService.deleteAll();
         log.info("[clear] mini_news cleared");
         return ResponseEntity.ok(Map.of("cleared", "mini-news", "message", "Все мини-новости удалены"));
+    }
+
+    @PostMapping("/clear/wiki")
+    public ResponseEntity<Map<String, String>> clearWiki() {
+        log.info("[clear] clear wiki_card");
+        wikiCardService.deleteAll();
+        log.info("[clear] wiki_card cleared");
+        return ResponseEntity.ok(Map.of("cleared", "wiki", "message", "Все карточки вики удалены"));
     }
 }

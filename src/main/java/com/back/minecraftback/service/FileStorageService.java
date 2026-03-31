@@ -141,6 +141,7 @@ public class FileStorageService {
             case "image/png" -> ".png";
             case "image/jpeg" -> ".jpg";
             case "image/gif" -> ".gif";
+            case "image/webp" -> ".webp";
             default -> ".bin";
         };
     }

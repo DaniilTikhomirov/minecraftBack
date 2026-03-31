@@ -78,7 +78,10 @@ public class SecurityConfig {
                                 "/rate/get", "/api/rate/get",
                                 "/main-news/get", "/api/main-news/get",
                                 "/mini-news/get", "/api/mini-news/get",
-                                "/rank/get", "/api/rank/get"
+                                "/rank/get", "/api/rank/get",
+                                "/wiki/get", "/api/wiki/get",
+                                "/payments/init", "/api/payments/init",
+                                "/payments/tbank/notification", "/api/payments/tbank/notification"
                         ).permitAll()
                         .requestMatchers(request -> {
                             String path = request.getServletPath();
@@ -103,6 +106,7 @@ public class SecurityConfig {
                                 "/cases/*", "/api/cases/*",
                                 "/main-news/*", "/api/main-news/*",
                                 "/mini-news/*", "/api/mini-news/*",
+                                "/wiki/*", "/api/wiki/*",
                                 "/admin/user/*", "/api/admin/user/*"
                         ).hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()

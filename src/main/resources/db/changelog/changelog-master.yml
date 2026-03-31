@@ -9,3 +9,7 @@ databaseChangeLog:
       file: db/changelog/v4/rank-cards-subscription-pricing.sql
   - include:
       file: db/changelog/v5/detailed-description-text.sql
+  - include:
+      file: db/changelog/v6/payment-order-tbank.sql
+  - include:
+      file: db/changelog/v7/wiki-card.sql
