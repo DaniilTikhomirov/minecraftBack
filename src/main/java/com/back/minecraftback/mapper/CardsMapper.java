@@ -10,6 +10,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
@@ -65,6 +66,19 @@ public interface CardsMapper {
 
     List<GetRankDto> toGetRankDto(List<RankCardsEntity> rankCardsEntity);
 
+    /** Преобразование массива строк описания (DTO) в единый текст (Entity). */
+    default String map(String[] value) {
+        if (value == null || value.length == 0) {
+            return "";
+        }
+        return String.join("\n", value);
+    }
 
-
+    /** Преобразование текста описания (Entity) обратно в массив строк (DTO). */
+    default String[] map(String value) {
+        if (value == null || value.isBlank()) {
+            return new String[0];
+        }
+        return value.split("\\R");
+    }
 }
