@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
@@ -41,7 +40,6 @@ public class TbankPaymentService {
     private final TbankAcquiringClient tbankAcquiringClient;
     private final ObjectMapper objectMapper;
 
-    @Transactional
     public PaymentInitResponseDto init(PaymentInitRequestDto dto) {
         if (!properties.isConfigured()) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Payment gateway not configured");
@@ -115,35 +113,35 @@ public class TbankPaymentService {
             RankSubscriptionPeriod period
     ) {
         String terminalKey = properties.terminalKey();
-        // Amount в строковом виде для токена и в числовом виде для JSON
-        String amountStr = String.valueOf(amountKopecks);
-        String description = buildDescription(nickname, type, itemId, quantity, period);
-
-        // Токен в порядке Amount + Description + OrderId + TerminalKey + Password
-        String token = TbankTokenSigner.signInitMinimal(
-                terminalKey,
-                amountStr,
-                orderId,
-                description,
-                properties.password()
-        );
-
         Map<String, Object> json = new HashMap<>();
         json.put("TerminalKey", terminalKey);
-        json.put("Amount", amountKopecks); // серверу можно отправлять числом
+        json.put("Amount", amountKopecks);
         json.put("OrderId", orderId);
-        json.put("Description", description.length() <= 35 ? description : description.substring(0, 35));
+
+        String description = buildDescription(nickname, type, itemId, quantity, period);
+        String shortDescription = description.length() <= 35 ? description : description.substring(0, 35);
+        json.put("Description", shortDescription);
+
+        Map<String, String> forSign = new HashMap<>();
+        forSign.put("TerminalKey", terminalKey);
+        forSign.put("Amount", String.valueOf(amountKopecks));
+        forSign.put("OrderId", orderId);
+        forSign.put("Description", shortDescription);
 
         if (properties.successUrl() != null && !properties.successUrl().isBlank()) {
             json.put("SuccessURL", properties.successUrl());
+            forSign.put("SuccessURL", properties.successUrl());
         }
         if (properties.failUrl() != null && !properties.failUrl().isBlank()) {
             json.put("FailURL", properties.failUrl());
+            forSign.put("FailURL", properties.failUrl());
         }
         if (properties.notificationUrl() != null && !properties.notificationUrl().isBlank()) {
             json.put("NotificationURL", properties.notificationUrl());
+            forSign.put("NotificationURL", properties.notificationUrl());
         }
 
+        String token = TbankTokenSigner.sign(forSign, properties.password());
         json.put("Token", token);
         return json;
     }
