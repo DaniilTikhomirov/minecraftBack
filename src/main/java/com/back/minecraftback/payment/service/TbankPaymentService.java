@@ -120,7 +120,7 @@ public class TbankPaymentService {
         json.put("OrderId", orderId);
 
         String description = buildDescription(nickname, type, itemId, quantity, period);
-        String shortDescription = description.length() <= 35 ? description : description.substring(0, 35);
+        String shortDescription = description.length() <= DESCRIPTION_MAX ? description : description.substring(0, DESCRIPTION_MAX);
         json.put("Description", shortDescription);
 
         Map<String, String> forSign = new HashMap<>();
@@ -128,6 +128,15 @@ public class TbankPaymentService {
         forSign.put("Amount", String.valueOf(amountKopecks));
         forSign.put("OrderId", orderId);
         forSign.put("Description", shortDescription);
+
+        // Язык формы явно "ru" (как в доке)
+        json.put("Language", "ru");
+        forSign.put("Language", "ru");
+
+        // Простой DATA с ником (не обязателен, но допустим)
+        Map<String, Object> data = new HashMap<>();
+        data.put("Nickname", nickname);
+        json.put("DATA", data);
 
         if (properties.successUrl() != null && !properties.successUrl().isBlank()) {
             json.put("SuccessURL", properties.successUrl());
