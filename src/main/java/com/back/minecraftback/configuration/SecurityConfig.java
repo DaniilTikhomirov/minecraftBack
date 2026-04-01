@@ -81,6 +81,7 @@ public class SecurityConfig {
                                 "/rank/get", "/api/rank/get",
                                 "/wiki/get", "/api/wiki/get",
                                 "/payments/init", "/api/payments/init",
+                                "/payments/status/*", "/api/payments/status/*",
                                 "/payments/tbank/notification", "/api/payments/tbank/notification"
                         ).permitAll()
                         .requestMatchers(request -> {
