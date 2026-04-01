@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -58,6 +59,8 @@ public class TbankPaymentService {
 
         PaymentOrderEntity order = new PaymentOrderEntity();
         order.setId(id);
+        order.setCreatedAt(Instant.now());
+        order.setUpdatedAt(Instant.now());
         order.setTbankOrderId(orderKey);
         order.setNickname(nickname);
         order.setEmail(email);
