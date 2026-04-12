@@ -8,6 +8,8 @@ import com.back.minecraftback.payment.model.PaymentOrderStatus;
 import com.back.minecraftback.payment.model.PaymentProductType;
 import com.back.minecraftback.payment.model.RankSubscriptionPeriod;
 import com.back.minecraftback.payment.repository.PaymentOrderRepository;
+import com.back.minecraftback.gameserver.PaymentPaidGameEvent;
+import com.back.minecraftback.shopstats.ShopStatsService;
 import com.back.minecraftback.payment.tbank.TbankInitResponse;
 import com.back.minecraftback.payment.tbank.TbankTokenSigner;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +44,8 @@ public class TbankPaymentService {
     private final PaymentOrderRepository paymentOrderRepository;
     private final TbankAcquiringClient tbankAcquiringClient;
     private final ObjectMapper objectMapper;
+    private final ShopStatsService shopStatsService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public PaymentInitResponseDto init(PaymentInitRequestDto dto) {
         if (!properties.isConfigured()) {
@@ -263,7 +268,19 @@ public class TbankPaymentService {
             }
             paymentOrderRepository.save(order);
             log.info("Payment confirmed orderId={} paymentId={}", orderId, pid);
-            // Начисление на игровой сервер — отдельная интеграция (RCON, очередь и т.д.)
+            shopStatsService.onPaymentConfirmed(order);
+            applicationEventPublisher.publishEvent(new PaymentPaidGameEvent(
+                    order.getTbankOrderId(),
+                    order.getId(),
+                    order.getNickname(),
+                    order.getAmountKopecks(),
+                    order.getProductType().name(),
+                    order.getProductId(),
+                    order.getSubscriptionPeriod() == null ? null : order.getSubscriptionPeriod().name(),
+                    order.getQuantity(),
+                    order.getTbankPaymentId()
+            ));
+            // Начисление на игровой сервер — WebSocket + идемпотентность на стороне плагина; при необходимости — REST-пуллинг из БД
         } else if (!success || (errorCode != null && !"0".equals(errorCode))) {
             order.setStatus(PaymentOrderStatus.FAILED);
             paymentOrderRepository.save(order);

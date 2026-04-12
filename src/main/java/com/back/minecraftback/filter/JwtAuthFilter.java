@@ -34,7 +34,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String servletPath = request.getServletPath() != null ? request.getServletPath() : "";
         String requestUri = request.getRequestURI() != null ? request.getRequestURI() : "";
-        return isAuthPath(servletPath) || isAuthPath(requestUri);
+        return isAuthPath(servletPath) || isAuthPath(requestUri)
+                || isGameWebSocketHandshake(request);
+    }
+
+    /** Handshake WebSocket для плагина: без JWT, доступ по секрету в {@code GameServerWebSocketHandshakeInterceptor}. */
+    private static boolean isGameWebSocketHandshake(HttpServletRequest request) {
+        if (!"GET".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
+        String servletPath = request.getServletPath() != null ? request.getServletPath() : "";
+        String uri = request.getRequestURI() != null ? request.getRequestURI() : "";
+        return isGameWsPath(servletPath) || isGameWsPath(uri);
+    }
+
+    private static boolean isGameWsPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return false;
+        }
+        String p = path.startsWith("/") ? path : "/" + path;
+        return "/game/ws".equals(p) || "/api/game/ws".equals(p);
     }
 
     private static boolean isAuthPath(String path) {
