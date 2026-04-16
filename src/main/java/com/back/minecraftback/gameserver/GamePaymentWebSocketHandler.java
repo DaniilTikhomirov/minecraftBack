@@ -31,7 +31,17 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
             return;
         }
         sessions.add(session);
-        log.info("[game-ws] connected id={} remote={}", session.getId(), session.getRemoteAddress());
+        var attrs = session.getAttributes();
+        log.info(
+                "[game-ws] connected id={} uri={} remoteSocket={} directPeer={} xForwardedFor={} xRealIp={} host={}",
+                session.getId(),
+                session.getUri(),
+                session.getRemoteAddress(),
+                attrs.get(GameServerWebSocketHandshakeInterceptor.ATTR_DIRECT_REMOTE_ADDR),
+                attrs.getOrDefault(GameServerWebSocketHandshakeInterceptor.ATTR_X_FORWARDED_FOR, "-"),
+                attrs.getOrDefault(GameServerWebSocketHandshakeInterceptor.ATTR_X_REAL_IP, "-"),
+                attrs.getOrDefault(GameServerWebSocketHandshakeInterceptor.ATTR_HOST, "-")
+        );
     }
 
     @Override

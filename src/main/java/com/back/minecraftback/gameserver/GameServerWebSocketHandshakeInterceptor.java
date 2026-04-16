@@ -10,6 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Map;
@@ -23,6 +25,12 @@ import java.util.Map;
 public class GameServerWebSocketHandshakeInterceptor implements HandshakeInterceptor {
 
     static final String TOKEN_HEADER = "X-Game-Server-Token";
+
+    /** Атрибуты сессии WebSocket: кто подключился за прокси / с какого сокета (для логов и отладки). */
+    static final String ATTR_DIRECT_REMOTE_ADDR = "gameWs.directRemoteAddr";
+    static final String ATTR_X_FORWARDED_FOR = "gameWs.xForwardedFor";
+    static final String ATTR_X_REAL_IP = "gameWs.xRealIp";
+    static final String ATTR_HOST = "gameWs.host";
 
     private final GameServerWsProperties properties;
 
@@ -41,10 +49,24 @@ public class GameServerWebSocketHandshakeInterceptor implements HandshakeInterce
             response.setStatusCode(HttpStatus.BAD_REQUEST);
             return false;
         }
-        String presented = servletRequest.getServletRequest().getHeader(TOKEN_HEADER);
+        HttpServletRequest req = servletRequest.getServletRequest();
+        String presented = req.getHeader(TOKEN_HEADER);
         if (!constantTimeEqualUtf8(properties.token(), presented)) {
             response.setStatusCode(HttpStatus.FORBIDDEN);
             return false;
+        }
+        attributes.put(ATTR_DIRECT_REMOTE_ADDR, req.getRemoteAddr());
+        String xff = req.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            attributes.put(ATTR_X_FORWARDED_FOR, xff);
+        }
+        String xri = req.getHeader("X-Real-IP");
+        if (xri != null && !xri.isBlank()) {
+            attributes.put(ATTR_X_REAL_IP, xri);
+        }
+        String host = req.getHeader("Host");
+        if (host != null && !host.isBlank()) {
+            attributes.put(ATTR_HOST, host);
         }
         return true;
     }
