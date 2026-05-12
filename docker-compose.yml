@@ -15,6 +15,9 @@ services:
       SUPER_ADMIN_PASSWORD: admin
       JWT_SECRET_KEY: ReKJZW6VekQl9blL2NSD9PeOmU65d8tq
       REFRESH_SECRET_KEY: 9St9275RBcn2RCucOffCbYDnYjhvt94q
+      # Общий секрет с плагином для WS (≥32 символа). Без него /api/game/ws и /api/game/online не работают.
+      GAME_SERVER_WS_TOKEN: ${GAME_SERVER_WS_TOKEN:-}
+      GAME_SERVER_STATS_SERVER_ID: ${GAME_SERVER_STATS_SERVER_ID:-default}
 
     # Монтируем папку на сервере → внутрь контейнера
     volumes:

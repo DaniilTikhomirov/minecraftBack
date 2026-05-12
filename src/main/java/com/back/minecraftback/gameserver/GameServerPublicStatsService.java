@@ -21,19 +21,23 @@ public class GameServerPublicStatsService {
 
     public GameServerOnlineDto getServerOnline() {
         String serverId = statsProperties.serverIdOrDefault();
-        if (!pluginRpcService.isPluginReachable()) {
-            return new GameServerOnlineDto(serverId, null, false);
+        boolean tokenOk = pluginRpcService.isWsTokenConfigured();
+        int sessions = pluginRpcService.getOpenWebSocketSessionCount();
+        boolean connected = tokenOk && sessions > 0;
+
+        if (!connected) {
+            return new GameServerOnlineDto(serverId, null, false, tokenOk, sessions);
         }
         try {
             JsonNode reply = pluginRpcService.rpc("get online " + serverId);
             Integer count = parseOnlinePlayers(reply);
-            return new GameServerOnlineDto(serverId, count, true);
+            return new GameServerOnlineDto(serverId, count, true, true, sessions);
         } catch (ResponseStatusException e) {
             log.debug("[game-stats] RPC failed for get online {}: {}", serverId, e.getReason());
-            return new GameServerOnlineDto(serverId, null, true);
+            return new GameServerOnlineDto(serverId, null, true, true, sessions);
         } catch (Exception e) {
             log.warn("[game-stats] unexpected error get online {}", serverId, e);
-            return new GameServerOnlineDto(serverId, null, true);
+            return new GameServerOnlineDto(serverId, null, true, true, sessions);
         }
     }
 
@@ -50,6 +54,17 @@ public class GameServerPublicStatsService {
         return null;
     }
 
-    public record GameServerOnlineDto(String serverId, Integer onlinePlayers, boolean pluginConnected) {
+    /**
+     * @param pluginConnected токен настроен и есть хотя бы одна WS-сессия плагина
+     * @param wsTokenConfigured {@code game-server.ws.token} не пустой и длина ≥ 32
+     * @param openWebSocketSessions число открытых сессий к {@code /api/game/ws}
+     */
+    public record GameServerOnlineDto(
+            String serverId,
+            Integer onlinePlayers,
+            boolean pluginConnected,
+            boolean wsTokenConfigured,
+            int openWebSocketSessions
+    ) {
     }
 }

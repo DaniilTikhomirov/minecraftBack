@@ -49,7 +49,16 @@ public class GameServerPluginRpcService {
     }
 
     public boolean isPluginReachable() {
-        return wsProperties.isConfigured() && webSocketHandler.getOpenSessionCount() > 0;
+        return isWsTokenConfigured() && getOpenWebSocketSessionCount() > 0;
+    }
+
+    /** Токен {@code game-server.ws.token} задан и длина ≥ 32 (иначе handshake не примет плагин). */
+    public boolean isWsTokenConfigured() {
+        return wsProperties.isConfigured();
+    }
+
+    public int getOpenWebSocketSessionCount() {
+        return webSocketHandler.getOpenSessionCount();
     }
 
     private JsonNode rpcWithRetry(String commandMessage) {
