@@ -43,6 +43,7 @@ public class TbankPaymentService {
     private final PaymentPricingService pricingService;
     private final PaymentOrderRepository paymentOrderRepository;
     private final TbankAcquiringClient tbankAcquiringClient;
+    private final GameServerValidationClient gameServerValidationClient;
     private final ObjectMapper objectMapper;
     private final ShopStatsService shopStatsService;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -56,6 +57,7 @@ public class TbankPaymentService {
         RankSubscriptionPeriod period = parsePeriod(dto.period(), type);
         String nickname = requireNickname(dto.nickname());
         String email = normalizeEmail(dto.email());
+        gameServerValidationClient.validateBeforePaymentInit(nickname);
 
         long amountKopecks = pricingService.computeAmountKopecks(type, dto.itemId(), dto.quantity(), period);
 

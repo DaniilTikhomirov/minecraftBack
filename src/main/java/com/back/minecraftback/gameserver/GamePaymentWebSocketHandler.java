@@ -1,5 +1,8 @@
 package com.back.minecraftback.gameserver;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -13,13 +16,19 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * Текстовый канал: только сервер → клиент (плагин не шлёт команды выдачи предметов сюда).
+ * Канал к игровому серверу: push оплат (подписанный JSON) и RPC-ответы валидации ({@code VALIDATION_RESPONSE}).
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
 
+    static final String TYPE_VALIDATION_RESPONSE = "VALIDATION_RESPONSE";
+
     private static final int MAX_SESSIONS = 32;
+
+    private final ObjectMapper objectMapper;
+    private final GameServerWsRpcAwaiter rpcAwaiter;
 
     private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
 
@@ -61,6 +70,7 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
             }
             try {
                 synchronized (session) {
+                    log.info("📤 [WS] Отправлено: [session={}] {}", session.getId(), json);
                     session.sendMessage(new TextMessage(json));
                 }
             } catch (IOException e) {
@@ -75,17 +85,57 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    /**
+     * Один RPC-запрос на первую открытую сессию (один плагин).
+     */
+    public void sendValidationRequestToFirstSession(String json) throws IOException {
+        WebSocketSession target = null;
+        for (WebSocketSession session : sessions) {
+            if (session.isOpen()) {
+                target = session;
+                break;
+            }
+        }
+        if (target == null) {
+            throw new IOException("no open game server WebSocket session");
+        }
+        synchronized (target) {
+            log.info("📤 [WS] Отправлено: [session={}] {}", target.getId(), json);
+            target.sendMessage(new TextMessage(json));
+        }
+    }
+
     public int getOpenSessionCount() {
         sessions.removeIf(s -> !s.isOpen());
         return sessions.size();
     }
 
-    /** Канал только на исходящие события; произвольный текст от клиента — закрытие (защита от «команд» в сокет). */
     @Override
     protected void handleTextMessage(@NonNull WebSocketSession session, @NonNull TextMessage message) throws Exception {
-        if (message.getPayloadLength() > 0) {
-            log.warn("[game-ws] unexpected client message, closing session {}", session.getId());
-            session.close(CloseStatus.POLICY_VIOLATION.withReason("push-only channel"));
+        if (message.getPayloadLength() == 0) {
+            log.info("📩 [WS] Получено: [session={}] (empty)", session.getId());
+            return;
         }
+        String payload = message.getPayload();
+        log.info("📩 [WS] Получено: [session={}] {}", session.getId(), payload);
+        JsonNode root;
+        try {
+            root = objectMapper.readTree(payload);
+        } catch (Exception e) {
+            log.warn("[game-ws] non-json client message session={}", session.getId());
+            return;
+        }
+        if (root == null || !root.isObject()) {
+            return;
+        }
+        String type = root.path("type").asText("");
+        if (TYPE_VALIDATION_RESPONSE.equals(type)) {
+            String requestId = root.path("requestId").asText("");
+            if (!requestId.isBlank()) {
+                rpcAwaiter.complete(requestId, root);
+            }
+            return;
+        }
+        log.warn("[game-ws] unexpected client message type={} session={}", type, session.getId());
     }
 }
