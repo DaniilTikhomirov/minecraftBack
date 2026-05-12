@@ -29,12 +29,13 @@ services:
         condition: service_healthy
 
     healthcheck:
-      # liveness: процесс поднялся (не 503 из-за агрегированного DOWN по БД на /actuator/health)
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health/liveness"]
-      interval: 20s
-      timeout: 10s
-      retries: 5
-      start_period: 120s
+      # Без curl -f: 503 у агрегированного /actuator/health при кратковременных сбоях БД не валит контейнер как «unhealthy».
+      # «Connection refused» = curl завершится с ошибкой — контейнер останется нездоровым, пока порт не откроется.
+      test: ["CMD-SHELL", "curl -sS --connect-timeout 4 -o /dev/null http://127.0.0.1:8080/actuator/health"]
+      interval: 15s
+      timeout: 8s
+      retries: 6
+      start_period: 180s
 
 
   db:
