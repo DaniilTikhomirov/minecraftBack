@@ -35,7 +35,44 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String servletPath = request.getServletPath() != null ? request.getServletPath() : "";
         String requestUri = request.getRequestURI() != null ? request.getRequestURI() : "";
         return isAuthPath(servletPath) || isAuthPath(requestUri)
-                || isGameWebSocketHandshake(request);
+                || isGameWebSocketHandshake(request)
+                || isPermitAllPublicApiPath(servletPath)
+                || isPermitAllPublicApiPath(requestUri);
+    }
+
+    /**
+     * Публичные эндпоинты из {@code SecurityConfig}: иначе при {@code credentials: 'include'}
+     * и битом refresh-cookie на api-домене фильтр отвечает 401 до цепочки — браузер видит «CORS blocked».
+     */
+    private static boolean isPermitAllPublicApiPath(String raw) {
+        if (raw == null || raw.isEmpty()) {
+            return false;
+        }
+        String p = raw.startsWith("/") ? raw : "/" + raw;
+        return switch (p) {
+            case "/cases/get", "/api/cases/get",
+                 "/rate/get", "/api/rate/get",
+                 "/main-news/get", "/api/main-news/get",
+                 "/mini-news/get", "/api/mini-news/get",
+                 "/rank/get", "/api/rank/get",
+                 "/wiki/get", "/api/wiki/get",
+                 "/payments/init", "/api/payments/init",
+                 "/payments/tbank/notification", "/api/payments/tbank/notification",
+                 "/game/online", "/api/game/online" -> true;
+            default -> p.startsWith("/payments/status/") || p.startsWith("/api/payments/status/")
+                    || p.startsWith("/swagger-ui")
+                    || p.startsWith("/api/swagger-ui")
+                    || p.startsWith("/v3/api-docs")
+                    || p.startsWith("/api/v3/api-docs")
+                    || "/swagger-ui.html".equals(p)
+                    || "/api/swagger-ui.html".equals(p)
+                    || p.startsWith("/webjars/")
+                    || p.startsWith("/api/webjars/")
+                    || p.startsWith("/files/")
+                    || p.startsWith("/api/files/")
+                    || p.startsWith("/actuator/")
+                    || p.startsWith("/api/actuator/");
+        };
     }
 
     /** Handshake WebSocket для плагина: без JWT, доступ по секрету в {@code GameServerWebSocketHandshakeInterceptor}. */
