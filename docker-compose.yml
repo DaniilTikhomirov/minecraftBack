@@ -8,7 +8,8 @@ services:
       - "8080:8080"
 
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/minecraft
+      # Схема mc_backend создаётся в db-init; без currentSchema Liquibase/JPA часто не стартуют
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/minecraft?currentSchema=mc_backend
       SPRING_DATASOURCE_USERNAME: telegram
       SPRING_DATASOURCE_PASSWORD: tg123
       SUPER_ADMIN_USERNAME: admin
@@ -28,11 +29,12 @@ services:
         condition: service_healthy
 
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health"]
+      # liveness: процесс поднялся (не 503 из-за агрегированного DOWN по БД на /actuator/health)
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/actuator/health/liveness"]
       interval: 20s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
 
   db:
