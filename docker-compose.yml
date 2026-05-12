@@ -28,16 +28,10 @@ services:
       db:
         condition: service_healthy
 
-    healthcheck:
-      # Без curl -f: 503 у агрегированного /actuator/health при кратковременных сбоях БД не валит контейнер как «unhealthy».
-      # «Connection refused» = curl завершится с ошибкой — контейнер останется нездоровым, пока порт не откроется.
-      test: ["CMD-SHELL", "curl -sS --connect-timeout 4 -o /dev/null http://127.0.0.1:8080/actuator/health"]
-      interval: 15s
-      timeout: 8s
-      retries: 6
-      start_period: 180s
-
-
+    # Без healthcheck: Spring + Liquibase на слабом VPS часто дольше 3 мин до порта 8080;
+    # curl к actuator даёт connection refused → «unhealthy» и compose ругается, хотя приложение ещё стартует.
+    # Состояние API: смотри docker logs minecraft_backend и внешний curl к хосту :8080/actuator/health
+    restart: unless-stopped
   db:
     image: postgres:15
     container_name: minecraft_db
