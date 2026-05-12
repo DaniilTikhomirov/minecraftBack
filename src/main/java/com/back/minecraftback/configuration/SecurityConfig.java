@@ -83,7 +83,8 @@ public class SecurityConfig {
                                 "/payments/init", "/api/payments/init",
                                 "/payments/status/*", "/api/payments/status/*",
                                 "/payments/tbank/notification", "/api/payments/tbank/notification",
-                                "/game/ws", "/api/game/ws"
+                                "/game/ws", "/api/game/ws",
+                                "/game/online", "/api/game/online"
                         ).permitAll()
                         .requestMatchers(request -> {
                             String path = request.getServletPath();

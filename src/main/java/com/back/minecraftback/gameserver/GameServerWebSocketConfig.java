@@ -10,7 +10,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 
 @Configuration
 @EnableWebSocket
-@EnableConfigurationProperties(GameServerWsProperties.class)
+@EnableConfigurationProperties({GameServerWsProperties.class, GameServerStatsProperties.class})
 @RequiredArgsConstructor
 public class GameServerWebSocketConfig implements WebSocketConfigurer {
 
