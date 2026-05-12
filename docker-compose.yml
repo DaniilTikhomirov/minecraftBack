@@ -26,11 +26,8 @@ services:
 
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_started
 
-    # Без healthcheck: Spring + Liquibase на слабом VPS часто дольше 3 мин до порта 8080;
-    # curl к actuator даёт connection refused → «unhealthy» и compose ругается, хотя приложение ещё стартует.
-    # Состояние API: смотри docker logs minecraft_backend и внешний curl к хосту :8080/actuator/health
     restart: unless-stopped
   db:
     image: postgres:15
@@ -44,12 +41,6 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./db-init:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U telegram -d minecraft"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
 
 volumes:
   db_data:
