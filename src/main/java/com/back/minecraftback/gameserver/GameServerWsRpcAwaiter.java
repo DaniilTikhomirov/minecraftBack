@@ -4,38 +4,26 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Один ожидаемый RPC-ответ за раз (формат плагина без {@code requestId}).
- */
 @Component
 public class GameServerWsRpcAwaiter {
 
-    private final AtomicReference<CompletableFuture<JsonNode>> pending = new AtomicReference<>();
+    private final ConcurrentHashMap<String, CompletableFuture<JsonNode>> pending = new ConcurrentHashMap<>();
 
-    public CompletableFuture<JsonNode> register(long timeoutMs) {
+    public CompletableFuture<JsonNode> register(String requestId, long timeoutMs) {
         CompletableFuture<JsonNode> future = new CompletableFuture<>();
-        CompletableFuture<JsonNode> existing = pending.get();
-        if (existing != null && !existing.isDone()) {
-            future.completeExceptionally(new IllegalStateException("Another plugin RPC is already in progress"));
-            return future;
-        }
-        pending.set(future);
-        return future.orTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                .whenComplete((r, ex) -> pending.compareAndSet(future, null));
+        CompletableFuture<JsonNode> timed = future.orTimeout(timeoutMs, TimeUnit.MILLISECONDS);
+        pending.put(requestId, future);
+        timed.whenComplete((r, ex) -> pending.remove(requestId, future));
+        return timed;
     }
 
-    /**
-     * @return true если ответ сопоставлен с ожидающим RPC
-     */
-    public boolean complete(JsonNode body) {
-        CompletableFuture<JsonNode> f = pending.get();
-        if (f != null && !f.isDone()) {
+    public void complete(String requestId, JsonNode body) {
+        CompletableFuture<JsonNode> f = pending.get(requestId);
+        if (f != null) {
             f.complete(body);
-            return true;
         }
-        return false;
     }
 }

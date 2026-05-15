@@ -23,6 +23,8 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @RequiredArgsConstructor
 public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
 
+    static final String TYPE_VALIDATION_RESPONSE = "VALIDATION_RESPONSE";
+
     private static final int MAX_SESSIONS = 32;
 
     private final ObjectMapper objectMapper;
@@ -126,10 +128,15 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
         if (root == null || !root.isObject()) {
             return;
         }
-        if (root.has("message") && (root.has("ok") || root.path("ok").isBoolean())) {
-            if (rpcAwaiter.complete(root)) {
-                return;
-            }
+        String type = root.path("type").asText("");
+        String requestId = root.path("requestId").asText("");
+        if (TYPE_VALIDATION_RESPONSE.equals(type) && !requestId.isBlank()) {
+            rpcAwaiter.complete(requestId, root);
+            return;
+        }
+        if (!requestId.isBlank() && root.has("message")) {
+            rpcAwaiter.complete(requestId, root);
+            return;
         }
         log.warn("[game-ws] unexpected client message session={} payload={}", session.getId(), payload);
     }
