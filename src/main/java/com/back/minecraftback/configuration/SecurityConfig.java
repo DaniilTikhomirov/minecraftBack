@@ -148,8 +148,17 @@ public class SecurityConfig {
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
 
-        // Любые заголовки в preflight (Sentry, кастомные X-* и т.д.); origins по-прежнему только из списка выше.
-        configuration.setAllowedHeaderPatterns(List.of("*"));
+        configuration.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type",
+                "X-Requested-With",
+                "Accept",
+                "Origin",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers",
+                "Cache-Control",
+                "Pragma"
+        ));
 
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
