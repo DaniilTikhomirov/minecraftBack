@@ -16,14 +16,12 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
- * Канал к игровому серверу: push оплат (подписанный JSON) и RPC-ответы валидации ({@code VALIDATION_RESPONSE}).
+ * Канал к игровому серверу: push оплат (подписанный JSON) и RPC-ответы плагина {@code {ok, message}}.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
-
-    static final String TYPE_VALIDATION_RESPONSE = "VALIDATION_RESPONSE";
 
     private static final int MAX_SESSIONS = 32;
 
@@ -86,9 +84,9 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * Один RPC-запрос на первую открытую сессию (один плагин).
+     * Сообщение плагину (RPC) на первую открытую сессию.
      */
-    public void sendValidationRequestToFirstSession(String json) throws IOException {
+    public void sendPluginMessage(String json) throws IOException {
         WebSocketSession target = null;
         for (WebSocketSession session : sessions) {
             if (session.isOpen()) {
@@ -128,14 +126,11 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
         if (root == null || !root.isObject()) {
             return;
         }
-        String type = root.path("type").asText("");
-        if (TYPE_VALIDATION_RESPONSE.equals(type)) {
-            String requestId = root.path("requestId").asText("");
-            if (!requestId.isBlank()) {
-                rpcAwaiter.complete(requestId, root);
+        if (root.has("message") && (root.has("ok") || root.path("ok").isBoolean())) {
+            if (rpcAwaiter.complete(root)) {
+                return;
             }
-            return;
         }
-        log.warn("[game-ws] unexpected client message type={} session={}", type, session.getId());
+        log.warn("[game-ws] unexpected client message session={} payload={}", session.getId(), payload);
     }
 }

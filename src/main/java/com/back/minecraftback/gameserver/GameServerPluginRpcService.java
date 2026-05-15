@@ -15,14 +15,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * RPC по WebSocket к плагину: {@code VALIDATION_REQUEST} / {@code VALIDATION_RESPONSE}.
+ * RPC по WebSocket к плагину: запрос {@code {"message":"..."}}, ответ {@code {"ok":true,"message":"..."}}.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class GameServerPluginRpcService {
-
-    public static final String TYPE_VALIDATION_REQUEST = "VALIDATION_REQUEST";
 
     private static final int MAX_ATTEMPTS = 2;
 
@@ -94,17 +92,14 @@ public class GameServerPluginRpcService {
     }
 
     private JsonNode rpcOnce(String commandMessage) throws ExecutionException, InterruptedException, IOException {
-        String requestId = java.util.UUID.randomUUID().toString();
         long timeoutMs = validationProperties.rpcTimeoutMsOrDefault();
 
-        ObjectNode envelope = objectMapper.createObjectNode();
-        envelope.put("type", TYPE_VALIDATION_REQUEST);
-        envelope.put("requestId", requestId);
-        envelope.put("message", commandMessage);
-        String json = objectMapper.writeValueAsString(envelope);
+        ObjectNode request = objectMapper.createObjectNode();
+        request.put("message", commandMessage);
+        String json = objectMapper.writeValueAsString(request);
 
-        CompletableFuture<JsonNode> pending = rpcAwaiter.register(requestId, timeoutMs);
-        webSocketHandler.sendValidationRequestToFirstSession(json);
+        CompletableFuture<JsonNode> pending = rpcAwaiter.register(timeoutMs);
+        webSocketHandler.sendPluginMessage(json);
         return pending.get();
     }
 
