@@ -19,3 +19,5 @@ databaseChangeLog:
       file: db/changelog/v9/rank-cards-drop-legacy-price.sql
   - include:
       file: db/changelog/v10/shop-stats.sql
+  - include:
+      file: db/changelog/v11/payment-order-server-id.sql

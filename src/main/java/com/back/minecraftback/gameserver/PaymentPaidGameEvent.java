@@ -9,6 +9,7 @@ import java.util.UUID;
 public record PaymentPaidGameEvent(
         String tbankOrderId,
         UUID internalOrderId,
+        String serverId,
         String nickname,
         long amountKopecks,
         String productType,

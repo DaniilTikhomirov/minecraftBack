@@ -9,6 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record GameServerStatsProperties(String serverId) {
 
     public String serverIdOrDefault() {
-        return serverId == null || serverId.isBlank() ? "default" : serverId.trim();
+        return serverId == null || serverId.isBlank() ? "anarchy-1" : serverId.trim();
     }
 }
