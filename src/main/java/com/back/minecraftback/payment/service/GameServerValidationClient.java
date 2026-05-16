@@ -40,6 +40,13 @@ public class GameServerValidationClient {
         }
 
         JsonNode onlineReply = pluginRpcService.rpc("check online " + nickname);
+        if (isUnknownCommand(onlineReply)) {
+            log.info(
+                    "[game-validation] plugin does not support 'check online', using 'check nickname' only for {}",
+                    nickname
+            );
+            return;
+        }
         if (!isPlayerOnline(onlineReply)) {
             if (isPlayerOffline(onlineReply)) {
                 throw new ResponseStatusException(
@@ -55,7 +62,15 @@ public class GameServerValidationClient {
         }
     }
 
+    private static boolean isUnknownCommand(JsonNode reply) {
+        String lower = replyMessage(reply).toLowerCase(Locale.ROOT);
+        return lower.contains("unknown validation command") || lower.contains("unknown command");
+    }
+
     private static boolean isNicknameExists(JsonNode reply) {
+        if (isUnknownCommand(reply)) {
+            return false;
+        }
         if (replyOk(reply) && !isNicknameNotFound(reply)) {
             return true;
         }

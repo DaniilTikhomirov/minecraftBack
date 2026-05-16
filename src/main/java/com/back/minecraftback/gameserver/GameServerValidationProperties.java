@@ -9,8 +9,9 @@ public record GameServerValidationProperties(
 ) {
     private static final int DEFAULT_RPC_TIMEOUT_MS = 2000;
 
+    /** По умолчанию {@code false}: плагин отвечает только на {@code check nickname}. */
     public boolean requireOnlineOrDefault() {
-        return requireOnline == null || requireOnline;
+        return requireOnline != null && requireOnline;
     }
 
     public int rpcTimeoutMsOrDefault() {
