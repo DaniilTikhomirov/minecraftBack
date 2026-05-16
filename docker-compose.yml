@@ -7,18 +7,28 @@ services:
     ports:
       - "8080:8080"
 
+    # .env в этой папке — переменные попадают в контейнер (TBANK_*, GAME_SERVER_*, и т.д.)
+    env_file:
+      - .env
+
     environment:
       # Схема mc_backend создаётся в db-init; без currentSchema Liquibase/JPA часто не стартуют
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/minecraft?currentSchema=mc_backend
-      SPRING_DATASOURCE_USERNAME: telegram
-      SPRING_DATASOURCE_PASSWORD: tg123
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/minecraft?currentSchema=mc_backend}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-telegram}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-tg123}
       SUPER_ADMIN_USERNAME: admin
       SUPER_ADMIN_PASSWORD: admin
       JWT_SECRET_KEY: ReKJZW6VekQl9blL2NSD9PeOmU65d8tq
       REFRESH_SECRET_KEY: 9St9275RBcn2RCucOffCbYDnYjhvt94q
+      TBANK_ACQUIRING_BASE_URL: ${TBANK_ACQUIRING_BASE_URL:-https://securepay.tinkoff.ru/v2}
+      TBANK_TERMINAL_KEY: ${TBANK_TERMINAL_KEY:-}
+      TBANK_PASSWORD: ${TBANK_PASSWORD:-}
+      TBANK_SUCCESS_URL: ${TBANK_SUCCESS_URL:-https://night-vision.su/payment/success}
+      TBANK_FAIL_URL: ${TBANK_FAIL_URL:-https://night-vision.su/payment/fail}
+      TBANK_NOTIFICATION_URL: ${TBANK_NOTIFICATION_URL:-}
       # Общий секрет с плагином для WS (≥32 символа). Без него /api/game/ws и /api/game/online не работают.
       GAME_SERVER_WS_TOKEN: ${GAME_SERVER_WS_TOKEN:-}
-      GAME_SERVER_STATS_SERVER_ID: ${GAME_SERVER_STATS_SERVER_ID:-default}
+      GAME_SERVER_STATS_SERVER_ID: ${GAME_SERVER_STATS_SERVER_ID:-anarchy-1}
 
     # Монтируем папку на сервере → внутрь контейнера
     volumes:
