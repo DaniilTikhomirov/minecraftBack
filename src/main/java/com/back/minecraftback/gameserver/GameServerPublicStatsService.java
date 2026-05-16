@@ -26,18 +26,20 @@ public class GameServerPublicStatsService {
         boolean connected = tokenOk && sessions > 0;
 
         if (!connected) {
-            return new GameServerOnlineDto(serverId, null, false, tokenOk, sessions);
+            String status = !tokenOk ? "WS_TOKEN_NOT_CONFIGURED" : "PLUGIN_NOT_CONNECTED";
+            return new GameServerOnlineDto(serverId, null, false, tokenOk, sessions, status);
         }
         try {
             JsonNode reply = pluginRpcService.rpc("get online " + serverId);
             Integer count = parseOnlinePlayers(reply);
-            return new GameServerOnlineDto(serverId, count, true, true, sessions);
+            String status = count != null ? "OK" : "PLUGIN_CONNECTED_ONLINE_UNKNOWN";
+            return new GameServerOnlineDto(serverId, count, true, true, sessions, status);
         } catch (ResponseStatusException e) {
             log.debug("[game-stats] RPC failed for get online {}: {}", serverId, e.getReason());
-            return new GameServerOnlineDto(serverId, null, true, true, sessions);
+            return new GameServerOnlineDto(serverId, null, true, true, sessions, "PLUGIN_RPC_FAILED");
         } catch (Exception e) {
             log.warn("[game-stats] unexpected error get online {}", serverId, e);
-            return new GameServerOnlineDto(serverId, null, true, true, sessions);
+            return new GameServerOnlineDto(serverId, null, true, true, sessions, "PLUGIN_RPC_ERROR");
         }
     }
 
@@ -64,7 +66,9 @@ public class GameServerPublicStatsService {
             Integer onlinePlayers,
             boolean pluginConnected,
             boolean wsTokenConfigured,
-            int openWebSocketSessions
+            int openWebSocketSessions,
+            /** PLUGIN_NOT_CONNECTED | WS_TOKEN_NOT_CONFIGURED | OK | … */
+            String status
     ) {
     }
 }

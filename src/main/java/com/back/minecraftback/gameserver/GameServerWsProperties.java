@@ -10,7 +10,11 @@ public record GameServerWsProperties(String token) {
 
     private static final int MIN_TOKEN_LENGTH = 32;
 
+    public String normalizedToken() {
+        return token == null ? "" : token.trim();
+    }
+
     public boolean isConfigured() {
-        return token != null && token.length() >= MIN_TOKEN_LENGTH;
+        return normalizedToken().length() >= MIN_TOKEN_LENGTH;
     }
 }

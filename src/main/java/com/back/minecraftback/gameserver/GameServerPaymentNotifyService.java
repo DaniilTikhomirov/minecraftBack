@@ -47,7 +47,7 @@ public class GameServerPaymentNotifyService {
 
         long issuedAtMillis = System.currentTimeMillis();
         String canonical = buildCanonical(event, issuedAtMillis);
-        String signatureHex = GameServerHmac.hmacSha256Hex(properties.token(), canonical);
+        String signatureHex = GameServerHmac.hmacSha256Hex(properties.normalizedToken(), canonical);
 
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("orderId", event.tbankOrderId());

@@ -1,6 +1,7 @@
 package com.back.minecraftback.gameserver;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
@@ -20,6 +21,7 @@ import java.util.Map;
  * Доступ к каналу только с заголовком {@code X-Game-Server-Token}, совпадающим с настроенным секретом.
  * Секрет не логируется; сравнение через {@link MessageDigest#isEqual(byte[], byte[])} при равной длине UTF-8.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class GameServerWebSocketHandshakeInterceptor implements HandshakeInterceptor {
@@ -42,6 +44,7 @@ public class GameServerWebSocketHandshakeInterceptor implements HandshakeInterce
             @NonNull Map<String, Object> attributes
     ) {
         if (!properties.isConfigured()) {
+            log.warn("[game-ws] handshake rejected: WS token not configured on API (GAME_SERVER_WS_TOKEN)");
             response.setStatusCode(HttpStatus.SERVICE_UNAVAILABLE);
             return false;
         }
@@ -51,7 +54,13 @@ public class GameServerWebSocketHandshakeInterceptor implements HandshakeInterce
         }
         HttpServletRequest req = servletRequest.getServletRequest();
         String presented = req.getHeader(TOKEN_HEADER);
-        if (!constantTimeEqualUtf8(properties.token(), presented)) {
+        String presentedTrimmed = presented == null ? null : presented.trim();
+        if (!constantTimeEqualUtf8(properties.normalizedToken(), presentedTrimmed)) {
+            log.warn(
+                    "[game-ws] handshake rejected: invalid X-Game-Server-Token from {} (header present={})",
+                    req.getRemoteAddr(),
+                    presented != null && !presented.isBlank()
+            );
             response.setStatusCode(HttpStatus.FORBIDDEN);
             return false;
         }
