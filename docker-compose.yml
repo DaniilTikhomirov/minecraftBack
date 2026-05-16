@@ -28,7 +28,8 @@ services:
       TBANK_NOTIFICATION_URL: ${TBANK_NOTIFICATION_URL:-}
       # Общий секрет с плагином для WS (≥32 символа). Без него /api/game/ws и /api/game/online не работают.
       GAME_SERVER_WS_TOKEN: ${GAME_SERVER_WS_TOKEN:-}
-      GAME_SERVER_STATS_SERVER_ID: ${GAME_SERVER_STATS_SERVER_ID:-anarchy-1}
+      GAME_SERVER_STATS_SERVER_ID: ${GAME_SERVER_STATS_SERVER_ID:-default}
+      GAME_SERVER_PAYMENT_SERVER_ID: ${GAME_SERVER_PAYMENT_SERVER_ID:-anarchy-1}
 
     # Монтируем папку на сервере → внутрь контейнера
     volumes:

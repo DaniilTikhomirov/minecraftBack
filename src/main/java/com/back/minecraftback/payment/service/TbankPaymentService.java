@@ -8,7 +8,7 @@ import com.back.minecraftback.payment.model.PaymentOrderStatus;
 import com.back.minecraftback.payment.model.PaymentProductType;
 import com.back.minecraftback.payment.model.RankSubscriptionPeriod;
 import com.back.minecraftback.payment.repository.PaymentOrderRepository;
-import com.back.minecraftback.gameserver.GameServerStatsProperties;
+import com.back.minecraftback.gameserver.GameServerPaymentProperties;
 import com.back.minecraftback.gameserver.PaymentPaidGameEvent;
 import com.back.minecraftback.shopstats.ShopStatsService;
 import com.back.minecraftback.payment.tbank.TbankInitResponse;
@@ -45,7 +45,7 @@ public class TbankPaymentService {
     private final PaymentOrderRepository paymentOrderRepository;
     private final TbankAcquiringClient tbankAcquiringClient;
     private final GameServerValidationClient gameServerValidationClient;
-    private final GameServerStatsProperties gameServerStatsProperties;
+    private final GameServerPaymentProperties gameServerPaymentProperties;
     private final ObjectMapper objectMapper;
     private final ShopStatsService shopStatsService;
     private final ApplicationEventPublisher applicationEventPublisher;
@@ -276,7 +276,7 @@ public class TbankPaymentService {
             applicationEventPublisher.publishEvent(new PaymentPaidGameEvent(
                     order.getTbankOrderId(),
                     order.getId(),
-                    gameServerStatsProperties.serverIdOrDefault(),
+                    gameServerPaymentProperties.serverIdOrDefault(),
                     order.getNickname(),
                     order.getAmountKopecks(),
                     order.getProductType().name(),

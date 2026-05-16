@@ -12,15 +12,15 @@ import org.springframework.stereotype.Component;
 public class GameServerWsStartupLogger {
 
     private final GameServerWsProperties wsProperties;
-    private final GameServerStatsProperties statsProperties;
+    private final GameServerPaymentProperties paymentProperties;
 
     @EventListener(ApplicationReadyEvent.class)
     public void logGameServerChannel() {
         if (wsProperties.isConfigured()) {
             log.info(
-                    "[game-ws] ready: token length={}, expect plugin at /api/game/ws, serverId={}",
+                    "[game-ws] ready: token length={}, expect plugin at /api/game/ws, paymentServerId={}",
                     wsProperties.normalizedToken().length(),
-                    statsProperties.serverIdOrDefault()
+                    paymentProperties.serverIdOrDefault()
             );
         } else {
             log.warn("[game-ws] GAME_SERVER_WS_TOKEN missing or shorter than 32 chars — plugin cannot connect");
