@@ -4,6 +4,7 @@ import com.back.minecraftback.dto.AllDataDto;
 import com.back.minecraftback.dto.GetCasesDto;
 import com.back.minecraftback.dto.GetNewsDto;
 import com.back.minecraftback.dto.GetRankDto;
+import com.back.minecraftback.dto.GetSundryDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ public class AdminDataService {
 
     private final RankCardsService rankCardsService;
     private final CasesService casesService;
+    private final SundryService sundryService;
     private final MainNewsService mainNewsService;
     private final MiniNewsService miniNewsService;
 
@@ -34,12 +36,13 @@ public class AdminDataService {
 
         List<GetRankDto> rankCards = rankCardsService.getAllFromDb();
         List<GetCasesDto> cases = casesService.getAllFromDb();
+        List<GetSundryDto> sundry = sundryService.getAllFromDb();
         List<GetNewsDto> mainNews = mainNewsService.getAllFromDb();
         List<GetNewsDto> miniNews = miniNewsService.getAllFromDb();
 
-        log.info("Дамп БД: rankCards={}, cases={}, mainNews={}, miniNews={}",
-                rankCards.size(), cases.size(), mainNews.size(), miniNews.size());
+        log.info("Дамп БД: rankCards={}, cases={}, sundry={}, mainNews={}, miniNews={}",
+                rankCards.size(), cases.size(), sundry.size(), mainNews.size(), miniNews.size());
 
-        return new AllDataDto(rankCards, cases, mainNews, miniNews);
+        return new AllDataDto(rankCards, cases, sundry, mainNews, miniNews);
     }
 }

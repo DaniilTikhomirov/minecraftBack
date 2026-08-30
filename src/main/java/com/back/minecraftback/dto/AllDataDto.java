@@ -6,6 +6,7 @@ import java.util.List;
 public record AllDataDto(
         List<GetRankDto> rankCards,
         List<GetCasesDto> cases,
+        List<GetSundryDto> sundry,
         List<GetNewsDto> mainNews,
         List<GetNewsDto> miniNews
 ) {

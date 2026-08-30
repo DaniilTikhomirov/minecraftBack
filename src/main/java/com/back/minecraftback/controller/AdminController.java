@@ -9,6 +9,7 @@ import com.back.minecraftback.service.CasesService;
 import com.back.minecraftback.service.MainNewsService;
 import com.back.minecraftback.service.MiniNewsService;
 import com.back.minecraftback.service.RankCardsService;
+import com.back.minecraftback.service.SundryService;
 import com.back.minecraftback.wiki.service.WikiCardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +33,7 @@ public class AdminController {
     private final AdminDataService adminDataService;
     private final RankCardsService rankCardsService;
     private final CasesService casesService;
+    private final SundryService sundryService;
     private final MainNewsService mainNewsService;
     private final MiniNewsService miniNewsService;
     private final WikiCardService wikiCardService;
@@ -116,13 +118,13 @@ public class AdminController {
 
     /**
      * Список сущностей, которые можно очистить.
-     * POST /admin/clear/rank, /admin/clear/cases, /admin/clear/main-news, /admin/clear/mini-news, /admin/clear/wiki
+     * POST /admin/clear/rank, /admin/clear/cases, /admin/clear/sundry, /admin/clear/main-news, /admin/clear/mini-news, /admin/clear/wiki
      */
     @GetMapping("/clear")
     public ResponseEntity<?> listClearTargets() {
         log.info("[clear] GET list clear targets");
         try {
-            List<String> targets = List.of("rank", "cases", "main-news", "mini-news", "wiki");
+            List<String> targets = List.of("rank", "cases", "sundry", "main-news", "mini-news", "wiki");
             return ResponseEntity.ok(Map.of("targets", targets));
         } catch (Exception e) {
             log.error("[clear] GET error", e);
@@ -146,6 +148,14 @@ public class AdminController {
         casesService.deleteAll();
         log.info("[clear] cases cleared");
         return ResponseEntity.ok(Map.of("cleared", "cases", "message", "Все кейсы удалены"));
+    }
+
+    @PostMapping("/clear/sundry")
+    public ResponseEntity<Map<String, String>> clearSundry() {
+        log.info("[clear] clear sundry");
+        sundryService.deleteAll();
+        log.info("[clear] sundry cleared");
+        return ResponseEntity.ok(Map.of("cleared", "sundry", "message", "Все позиции каталога удалены"));
     }
 
     @PostMapping("/clear/main-news")

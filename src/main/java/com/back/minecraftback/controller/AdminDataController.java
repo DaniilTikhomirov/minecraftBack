@@ -24,7 +24,7 @@ public class AdminDataController {
     private final AdminDataService adminDataService;
 
     /**
-     * Всё содержимое БД: rankCards, cases, mainNews, miniNews.
+     * Всё содержимое БД: rankCards, cases, sundry, mainNews, miniNews.
      * Доступ: только SUPER_ADMIN (настраивается в SecurityConfig).
      */
     @GetMapping("/data")

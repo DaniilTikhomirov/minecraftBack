@@ -2,7 +2,6 @@ package com.back.minecraftback.shopstats;
 
 import com.back.minecraftback.payment.entity.PaymentOrderEntity;
 import com.back.minecraftback.payment.model.PaymentOrderStatus;
-import com.back.minecraftback.payment.model.PaymentProductType;
 import com.back.minecraftback.shopstats.dto.ShopStatsDtos;
 import com.back.minecraftback.shopstats.dto.ShopStatsDtos.*;
 import com.back.minecraftback.shopstats.entity.*;
@@ -46,11 +45,6 @@ public class ShopStatsService {
         if (order == null || order.getStatus() != PaymentOrderStatus.PAID) {
             return;
         }
-        if (order.getProductType() == PaymentProductType.SUNDRY) {
-            log.debug("[shopStats] skip SUNDRY order");
-            return;
-        }
-
         String productKey = labelResolver.buildProductKey(order);
         if (productKey.length() > 384) {
             log.warn("[shopStats] productKey too long, truncated");

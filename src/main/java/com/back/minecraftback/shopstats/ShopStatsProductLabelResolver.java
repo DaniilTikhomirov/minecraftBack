@@ -2,11 +2,13 @@ package com.back.minecraftback.shopstats;
 
 import com.back.minecraftback.entity.CasesEntity;
 import com.back.minecraftback.entity.RankCardsEntity;
+import com.back.minecraftback.entity.SundryEntity;
 import com.back.minecraftback.payment.entity.PaymentOrderEntity;
 import com.back.minecraftback.payment.model.PaymentProductType;
 import com.back.minecraftback.payment.model.RankSubscriptionPeriod;
 import com.back.minecraftback.repository.CasesRepository;
 import com.back.minecraftback.repository.RankCardsRepository;
+import com.back.minecraftback.repository.SundryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,13 +20,14 @@ public class ShopStatsProductLabelResolver {
 
     private final RankCardsRepository rankCardsRepository;
     private final CasesRepository casesRepository;
+    private final SundryRepository sundryRepository;
 
     public String buildProductKey(PaymentOrderEntity order) {
         return switch (order.getProductType()) {
             case RANK -> "RANK:" + order.getProductId() + ":" + order.getSubscriptionPeriod();
             case CASE -> "CASE:" + order.getProductId();
             case CURRENCY -> "CURRENCY";
-            case SUNDRY -> "SUNDRY";
+            case SUNDRY -> "SUNDRY:" + order.getProductId();
         };
     }
 
@@ -34,7 +37,7 @@ public class ShopStatsProductLabelResolver {
                 case RANK -> labelRank(order);
                 case CASE -> labelCase(order);
                 case CURRENCY -> "Внутриигровая валюта";
-                case SUNDRY -> "Прочее";
+                case SUNDRY -> labelSundry(order);
             };
             return truncate(raw, LABEL_MAX);
         } catch (RuntimeException e) {
@@ -79,6 +82,17 @@ public class ShopStatsProductLabelResolver {
                 .orElse("Кейс #" + id);
     }
 
+    private String labelSundry(PaymentOrderEntity order) {
+        Long id = order.getProductId();
+        if (id == null) {
+            return "Прочее";
+        }
+        return sundryRepository.findById(id)
+                .map(SundryEntity::getTitle)
+                .filter(t -> t != null && !t.isBlank())
+                .orElse("Прочее #" + id);
+    }
+
     private static String fallbackLabel(PaymentOrderEntity order) {
         PaymentProductType t = order.getProductType();
         if (t == PaymentProductType.RANK) {
@@ -86,6 +100,9 @@ public class ShopStatsProductLabelResolver {
         }
         if (t == PaymentProductType.CASE) {
             return "Кейс " + order.getProductId();
+        }
+        if (t == PaymentProductType.SUNDRY) {
+            return "Прочее " + order.getProductId();
         }
         return t.name();
     }

@@ -75,6 +75,7 @@ public class SecurityConfig {
                                 "/files/**", "/api/files/**",
                                 "/actuator/**",
                                 "/cases/get", "/api/cases/get",
+                                "/sundry/get", "/api/sundry/get",
                                 "/rate/get", "/api/rate/get",
                                 "/main-news/get", "/api/main-news/get",
                                 "/mini-news/get", "/api/mini-news/get",
@@ -100,6 +101,7 @@ public class SecurityConfig {
                                 "/admin/clear/**", "/api/admin/clear/**",
                                 "/rank/clear", "/api/rank/clear",
                                 "/cases/clear", "/api/cases/clear",
+                                "/sundry/clear", "/api/sundry/clear",
                                 "/main-news/clear", "/api/main-news/clear",
                                 "/mini-news/clear", "/api/mini-news/clear",
                                 "/db/**", "/api/db/**"
@@ -107,6 +109,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE,
                                 "/rank/*", "/api/rank/*",
                                 "/cases/*", "/api/cases/*",
+                                "/sundry/*", "/api/sundry/*",
                                 "/main-news/*", "/api/main-news/*",
                                 "/mini-news/*", "/api/mini-news/*",
                                 "/wiki/*", "/api/wiki/*",

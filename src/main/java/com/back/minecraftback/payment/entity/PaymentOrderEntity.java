@@ -64,6 +64,9 @@ public class PaymentOrderEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "game_notified_at")
+    private Instant gameNotifiedAt;
+
     @PrePersist
     void prePersist() {
         Instant now = Instant.now();

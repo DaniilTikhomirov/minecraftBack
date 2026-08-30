@@ -21,3 +21,7 @@ databaseChangeLog:
       file: db/changelog/v10/shop-stats.sql
   - include:
       file: db/changelog/v11/payment-order-server-id.sql
+  - include:
+      file: db/changelog/v12/sundry.sql
+  - include:
+      file: db/changelog/v13/payment-order-game-notified.sql

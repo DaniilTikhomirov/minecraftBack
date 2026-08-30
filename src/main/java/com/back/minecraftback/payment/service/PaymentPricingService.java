@@ -2,10 +2,12 @@ package com.back.minecraftback.payment.service;
 
 import com.back.minecraftback.entity.CasesEntity;
 import com.back.minecraftback.entity.RankCardsEntity;
+import com.back.minecraftback.entity.SundryEntity;
 import com.back.minecraftback.payment.model.PaymentProductType;
 import com.back.minecraftback.payment.model.RankSubscriptionPeriod;
 import com.back.minecraftback.repository.CasesRepository;
 import com.back.minecraftback.repository.RankCardsRepository;
+import com.back.minecraftback.repository.SundryRepository;
 import com.back.minecraftback.repository.ExchangeRateRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class PaymentPricingService {
 
     private final CasesRepository casesRepository;
     private final RankCardsRepository rankCardsRepository;
+    private final SundryRepository sundryRepository;
     private final ExchangeRateRepository exchangeRateRepository;
 
     /**
@@ -33,9 +36,9 @@ public class PaymentPricingService {
     ) {
         return switch (type) {
             case CURRENCY -> priceCurrencyKopecks(quantity);
-            case CASE -> priceCaseKopecks(itemId);
+            case CASE -> priceCaseKopecks(itemId, quantity);
             case RANK -> priceRankKopecks(itemId, period);
-            case SUNDRY -> throw new IllegalArgumentException("SUNDRY is not supported yet");
+            case SUNDRY -> priceSundryKopecks(itemId, quantity);
         };
     }
 
@@ -55,10 +58,11 @@ public class PaymentPricingService {
         return totalRub.movePointRight(2).setScale(0, RoundingMode.HALF_UP).longValue();
     }
 
-    private long priceCaseKopecks(Long caseId) {
+    private long priceCaseKopecks(Long caseId, Integer quantity) {
         if (caseId == null || caseId <= 0) {
             throw new IllegalArgumentException("itemId is required for CASE");
         }
+        int qty = requirePositiveQuantity(quantity, "CASE");
         CasesEntity c = casesRepository.findById(caseId)
                 .orElseThrow(() -> new EntityNotFoundException("case not found"));
         if (!Boolean.TRUE.equals(c.getActive())) {
@@ -68,7 +72,7 @@ public class PaymentPricingService {
         if (rub == null || rub <= 0) {
             throw new IllegalArgumentException("case has no valid price");
         }
-        return rub * 100L;
+        return Math.multiplyExact(rub * 100L, qty);
     }
 
     private long priceRankKopecks(Long rankId, RankSubscriptionPeriod period) {
@@ -95,6 +99,31 @@ public class PaymentPricingService {
             }
         };
         return rub * 100L;
+    }
+
+    private long priceSundryKopecks(Long itemId, Integer quantity) {
+        if (itemId == null || itemId <= 0) {
+            throw new IllegalArgumentException("itemId is required for SUNDRY");
+        }
+        int qty = requirePositiveQuantity(quantity, "SUNDRY");
+        SundryEntity item = sundryRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException("sundry item not found"));
+        if (!Boolean.TRUE.equals(item.getActive())) {
+            throw new IllegalArgumentException("sundry item is not available for purchase");
+        }
+        Integer rub = item.getPrice();
+        if (rub == null || rub <= 0) {
+            throw new IllegalArgumentException("sundry item has no valid price");
+        }
+        return Math.multiplyExact(rub * 100L, qty);
+    }
+
+    private static int requirePositiveQuantity(Integer quantity, String type) {
+        int qty = quantity == null ? 1 : quantity;
+        if (qty <= 0) {
+            throw new IllegalArgumentException("quantity must be positive for " + type);
+        }
+        return qty;
     }
 
     private static int requirePositive(Integer v, String field) {

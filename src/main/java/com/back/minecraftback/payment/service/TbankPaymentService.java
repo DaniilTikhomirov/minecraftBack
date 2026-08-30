@@ -57,11 +57,12 @@ public class TbankPaymentService {
 
         PaymentProductType type = parseProductType(dto.type());
         RankSubscriptionPeriod period = parsePeriod(dto.period(), type);
+        Integer quantity = resolveQuantity(dto.quantity(), type);
         String nickname = requireNickname(dto.nickname());
         String email = normalizeEmail(dto.email());
         gameServerValidationClient.validateBeforePaymentInit(nickname);
 
-        long amountKopecks = pricingService.computeAmountKopecks(type, dto.itemId(), dto.quantity(), period);
+        long amountKopecks = pricingService.computeAmountKopecks(type, dto.itemId(), quantity, period);
 
         UUID id = UUID.randomUUID();
         String orderKey = id.toString();
@@ -77,11 +78,11 @@ public class TbankPaymentService {
         order.setProductType(type);
         order.setProductId(dto.itemId());
         order.setSubscriptionPeriod(period);
-        order.setQuantity(dto.quantity());
+        order.setQuantity(quantity);
         order.setStatus(PaymentOrderStatus.PENDING);
         paymentOrderRepository.save(order);
 
-        Map<String, Object> body = buildInitJsonBody(orderKey, amountKopecks, nickname, type, dto.itemId(), dto.quantity(), period);
+        Map<String, Object> body = buildInitJsonBody(orderKey, amountKopecks, nickname, type, dto.itemId(), quantity, period);
         try {
             TbankInitResponse resp = tbankAcquiringClient.callInit(body);
             String rawJson = objectMapper.writeValueAsString(resp);
@@ -285,7 +286,7 @@ public class TbankPaymentService {
                     order.getQuantity(),
                     order.getTbankPaymentId()
             ));
-            // Начисление на игровой сервер — WebSocket + идемпотентность на стороне плагина; при необходимости — REST-пуллинг из БД
+            // Начисление на игровой сервер — WebSocket; если плагин офлайн, повтор при реконнекте и каждые 15 с
         } else if (!success || (errorCode != null && !"0".equals(errorCode))) {
             order.setStatus(PaymentOrderStatus.FAILED);
             paymentOrderRepository.save(order);
@@ -336,6 +337,17 @@ public class TbankPaymentService {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("unknown product type: " + raw);
         }
+    }
+
+    private static Integer resolveQuantity(Integer quantity, PaymentProductType type) {
+        if (type == PaymentProductType.SUNDRY || type == PaymentProductType.CASE) {
+            int qty = quantity == null ? 1 : quantity;
+            if (qty <= 0) {
+                throw new IllegalArgumentException("quantity must be positive for " + type.name());
+            }
+            return qty;
+        }
+        return quantity;
     }
 
     private static RankSubscriptionPeriod parsePeriod(String raw, PaymentProductType type) {

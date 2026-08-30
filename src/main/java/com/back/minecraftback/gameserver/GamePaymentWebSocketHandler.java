@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -29,6 +30,7 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
 
     private final ObjectMapper objectMapper;
     private final GameServerWsRpcAwaiter rpcAwaiter;
+    private final ObjectProvider<GameServerPaymentNotifyService> paymentNotifyService;
 
     private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();
 
@@ -51,6 +53,10 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
                 attrs.getOrDefault(GameServerWebSocketHandshakeInterceptor.ATTR_X_REAL_IP, "-"),
                 attrs.getOrDefault(GameServerWebSocketHandshakeInterceptor.ATTR_HOST, "-")
         );
+        GameServerPaymentNotifyService notify = paymentNotifyService.getIfAvailable();
+        if (notify != null) {
+            notify.replayPendingPayments();
+        }
     }
 
     @Override
@@ -61,8 +67,10 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
 
     /**
      * Рассылка подписанного JSON всем открытым сессиям игрового сервера.
+     * @return true, если хотя бы одна сессия приняла сообщение
      */
-    public void broadcastSignedJson(String json) {
+    public boolean broadcastSignedJson(String json) {
+        boolean delivered = false;
         for (WebSocketSession session : sessions) {
             if (!session.isOpen()) {
                 sessions.remove(session);
@@ -73,6 +81,7 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
                     log.info("📤 [WS] Отправлено: [session={}] {}", session.getId(), json);
                     session.sendMessage(new TextMessage(json));
                 }
+                delivered = true;
             } catch (IOException e) {
                 log.warn("[game-ws] send failed id={}", session.getId(), e);
                 try {
@@ -83,6 +92,7 @@ public class GamePaymentWebSocketHandler extends TextWebSocketHandler {
                 sessions.remove(session);
             }
         }
+        return delivered;
     }
 
     /**

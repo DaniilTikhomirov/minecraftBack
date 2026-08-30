@@ -51,6 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String p = raw.startsWith("/") ? raw : "/" + raw;
         return switch (p) {
             case "/cases/get", "/api/cases/get",
+                 "/sundry/get", "/api/sundry/get",
                  "/rate/get", "/api/rate/get",
                  "/main-news/get", "/api/main-news/get",
                  "/mini-news/get", "/api/mini-news/get",

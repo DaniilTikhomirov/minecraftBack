@@ -5,6 +5,7 @@ import com.back.minecraftback.entity.CasesEntity;
 import com.back.minecraftback.entity.MainNewsEntity;
 import com.back.minecraftback.entity.MiniNewsEntity;
 import com.back.minecraftback.entity.RankCardsEntity;
+import com.back.minecraftback.entity.SundryEntity;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -41,6 +42,12 @@ public interface CardsMapper {
     })
     RankCardsEntity toRankCardsEntity(RankDto rank);
 
+    @Mappings({
+            @Mapping(target = "active", ignore = true),
+            @Mapping(target = "imageUrl", ignore = true)
+    })
+    SundryEntity toSundryEntity(SundryDto sundry);
+
     @Mapping(target = "imageUrl", source = "imageUrl")
     @Mapping(target = "active", source = "active")
     GetNewsDto toGetNewsDto(MainNewsEntity mainNewsEntity);
@@ -58,6 +65,10 @@ public interface CardsMapper {
     @Mapping(target = "active", source = "active")
     GetRankDto toGetRankDto(RankCardsEntity rankCardsEntity);
 
+    @Mapping(target = "imageUrl", source = "imageUrl")
+    @Mapping(target = "active", source = "active")
+    GetSundryDto toGetSundryDto(SundryEntity sundryEntity);
+
     List<GetNewsDto> toGetNewsDtoMain(List<MainNewsEntity> mainNewsEntity);
 
     List<GetNewsDto> toGetNewsDtoMini(List<MiniNewsEntity> miniNewsEntity);
@@ -65,6 +76,8 @@ public interface CardsMapper {
     List<GetCasesDto> toGetCasesDto(List<CasesEntity> casesEntity);
 
     List<GetRankDto> toGetRankDto(List<RankCardsEntity> rankCardsEntity);
+
+    List<GetSundryDto> toGetSundryDto(List<SundryEntity> sundryEntity);
 
     /** Преобразование массива строк описания (DTO) в единый текст (Entity). */
     default String map(String[] value) {
