@@ -32,12 +32,12 @@ public class RankCardsService {
 
     private RankCardsEntity toEntity(RankDto dto) {
         validateSubscriptionPricing(dto);
-        TextValidation.requireDetailedDescriptionLength(dto.detailedDescription());
+        String detailedDescription = TextValidation.prepareDetailedDescription(dto.detailedDescription());
         if (isNew(dto)) {
             RankCardsEntity rankEntity = mapper.toRankCardsEntity(dto);
             rankEntity.setActive(true);
-            rankEntity.setAllowForever(Boolean.TRUE.equals(dto.allowForever()));
-            rankEntity.setPriceForever(Boolean.TRUE.equals(dto.allowForever()) ? dto.priceForever() : null);
+            rankEntity.setDetailedDescription(detailedDescription);
+            applyPeriodFlags(rankEntity, dto);
             handleNewEntity(dto, rankEntity);
             return rankEntity;
         }
@@ -47,12 +47,24 @@ public class RankCardsService {
         existing.setPriceMonth(fromDto.getPriceMonth());
         existing.setPriceThreeMonths(fromDto.getPriceThreeMonths());
         existing.setPriceYear(fromDto.getPriceYear());
-        existing.setAllowForever(Boolean.TRUE.equals(fromDto.getAllowForever()));
-        existing.setPriceForever(Boolean.TRUE.equals(fromDto.getAllowForever()) ? fromDto.getPriceForever() : null);
+        existing.setPriceForever(fromDto.getPriceForever());
+        applyPeriodFlags(existing, dto);
         existing.setDescription(fromDto.getDescription());
-        existing.setDetailedDescription(fromDto.getDetailedDescription());
+        existing.setDetailedDescription(detailedDescription);
         handleExistingEntity(dto, existing);
         return existing;
+    }
+
+    private static void applyPeriodFlags(RankCardsEntity entity, RankDto dto) {
+        entity.setAllowMonth(allowPeriodOrDefault(dto.allowMonth()));
+        entity.setAllowThreeMonths(allowPeriodOrDefault(dto.allowThreeMonths()));
+        entity.setAllowYear(allowPeriodOrDefault(dto.allowYear()));
+        entity.setAllowForever(Boolean.TRUE.equals(dto.allowForever()));
+    }
+
+    /** null в запросе — срок включён (совместимость со старой админкой). */
+    private static boolean allowPeriodOrDefault(Boolean allowed) {
+        return allowed == null || Boolean.TRUE.equals(allowed);
     }
 
 
@@ -101,24 +113,25 @@ public class RankCardsService {
         if (dto == null) {
             throw new IllegalArgumentException("rank dto is required");
         }
-        if (dto.priceMonth() == null || dto.priceMonth() <= 0) {
-            throw new IllegalArgumentException("priceMonth must be positive");
-        }
-        if (dto.priceThreeMonths() == null || dto.priceThreeMonths() <= 0) {
-            throw new IllegalArgumentException("priceThreeMonths must be positive");
-        }
-        if (dto.priceYear() == null || dto.priceYear() <= 0) {
-            throw new IllegalArgumentException("priceYear must be positive");
-        }
+        boolean allowMonth = allowPeriodOrDefault(dto.allowMonth());
+        boolean allowThreeMonths = allowPeriodOrDefault(dto.allowThreeMonths());
+        boolean allowYear = allowPeriodOrDefault(dto.allowYear());
         boolean allowForever = Boolean.TRUE.equals(dto.allowForever());
-        if (allowForever) {
-            if (dto.priceForever() == null || dto.priceForever() <= 0) {
-                throw new IllegalArgumentException("priceForever must be positive when allowForever=true");
-            }
-            return;
+
+        if (!allowMonth && !allowThreeMonths && !allowYear && !allowForever) {
+            throw new IllegalArgumentException("at least one subscription period must be enabled");
         }
-        if (dto.priceForever() != null) {
-            throw new IllegalArgumentException("priceForever must be null when allowForever=false");
+        if (allowMonth && (dto.priceMonth() == null || dto.priceMonth() <= 0)) {
+            throw new IllegalArgumentException("priceMonth must be positive when allowMonth=true");
+        }
+        if (allowThreeMonths && (dto.priceThreeMonths() == null || dto.priceThreeMonths() <= 0)) {
+            throw new IllegalArgumentException("priceThreeMonths must be positive when allowThreeMonths=true");
+        }
+        if (allowYear && (dto.priceYear() == null || dto.priceYear() <= 0)) {
+            throw new IllegalArgumentException("priceYear must be positive when allowYear=true");
+        }
+        if (allowForever && (dto.priceForever() == null || dto.priceForever() <= 0)) {
+            throw new IllegalArgumentException("priceForever must be positive when allowForever=true");
         }
     }
 

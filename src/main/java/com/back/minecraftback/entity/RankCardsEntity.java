@@ -21,11 +21,20 @@ public class RankCardsEntity {
     @Column(name = "price_month")
     private Integer priceMonth;
 
+    @Column(name = "allow_month")
+    private Boolean allowMonth = true;
+
     @Column(name = "price_three_months")
     private Integer priceThreeMonths;
 
+    @Column(name = "allow_three_months")
+    private Boolean allowThreeMonths = true;
+
     @Column(name = "price_year")
     private Integer priceYear;
+
+    @Column(name = "allow_year")
+    private Boolean allowYear = true;
 
     @Column(name = "allow_forever")
     private Boolean allowForever = false;

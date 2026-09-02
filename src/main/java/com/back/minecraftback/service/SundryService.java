@@ -31,11 +31,12 @@ public class SundryService {
     }
 
     private SundryEntity toEntity(SundryDto dto) {
-        TextValidation.requireDetailedDescriptionLength(dto.detailedDescription());
+        String detailedDescription = TextValidation.prepareDetailedDescription(dto.detailedDescription());
         requirePositivePrice(dto.price());
         if (isNew(dto)) {
             SundryEntity entity = mapper.toSundryEntity(dto);
             entity.setActive(true);
+            entity.setDetailedDescription(detailedDescription);
             handleNewEntity(dto, entity);
             return entity;
         }
@@ -44,7 +45,7 @@ public class SundryService {
         existing.setTitle(fromDto.getTitle());
         existing.setSubtitle(fromDto.getSubtitle());
         existing.setDescription(fromDto.getDescription());
-        existing.setDetailedDescription(fromDto.getDetailedDescription());
+        existing.setDetailedDescription(detailedDescription);
         existing.setPrice(fromDto.getPrice());
         handleExistingEntity(dto, existing);
         return existing;

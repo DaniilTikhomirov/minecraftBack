@@ -88,11 +88,26 @@ public class PaymentPricingService {
             throw new IllegalArgumentException("rank is not available for purchase");
         }
         int rub = switch (period) {
-            case MONTH -> requirePositive(r.getPriceMonth(), "priceMonth");
-            case THREE_MONTHS -> requirePositive(r.getPriceThreeMonths(), "priceThreeMonths");
-            case YEAR -> requirePositive(r.getPriceYear(), "priceYear");
+            case MONTH -> {
+                if (!isPeriodAllowed(r.getAllowMonth())) {
+                    throw new IllegalArgumentException("month purchase is not allowed for this rank");
+                }
+                yield requirePositive(r.getPriceMonth(), "priceMonth");
+            }
+            case THREE_MONTHS -> {
+                if (!isPeriodAllowed(r.getAllowThreeMonths())) {
+                    throw new IllegalArgumentException("three months purchase is not allowed for this rank");
+                }
+                yield requirePositive(r.getPriceThreeMonths(), "priceThreeMonths");
+            }
+            case YEAR -> {
+                if (!isPeriodAllowed(r.getAllowYear())) {
+                    throw new IllegalArgumentException("year purchase is not allowed for this rank");
+                }
+                yield requirePositive(r.getPriceYear(), "priceYear");
+            }
             case FOREVER -> {
-                if (!Boolean.TRUE.equals(r.getAllowForever())) {
+                if (!isPeriodAllowed(r.getAllowForever())) {
                     throw new IllegalArgumentException("forever purchase is not allowed for this rank");
                 }
                 yield requirePositive(r.getPriceForever(), "priceForever");
@@ -116,6 +131,11 @@ public class PaymentPricingService {
             throw new IllegalArgumentException("sundry item has no valid price");
         }
         return Math.multiplyExact(rub * 100L, qty);
+    }
+
+    /** null трактуем как включённый срок (совместимость со старыми строками до миграции). */
+    private static boolean isPeriodAllowed(Boolean allowed) {
+        return allowed == null || Boolean.TRUE.equals(allowed);
     }
 
     private static int requirePositiveQuantity(Integer quantity, String type) {

@@ -25,3 +25,5 @@ databaseChangeLog:
       file: db/changelog/v12/sundry.sql
   - include:
       file: db/changelog/v13/payment-order-game-notified.sql
+  - include:
+      file: db/changelog/v14/rank-cards-period-flags.sql

@@ -32,8 +32,9 @@ public class CasesService {
     }
 
     private CasesEntity toEntity(CasesDto dto) {
-        TextValidation.requireDetailedDescriptionLength(dto.detailedDescription());
+        String detailedDescription = TextValidation.prepareDetailedDescription(dto.detailedDescription());
         CasesEntity casesEntity = mapper.toCasesEntity(dto);
+        casesEntity.setDetailedDescription(detailedDescription);
 
         if (isNew(dto)) {
             handleNewEntity(dto, casesEntity);

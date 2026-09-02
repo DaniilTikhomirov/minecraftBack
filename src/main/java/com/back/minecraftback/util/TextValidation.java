@@ -19,4 +19,12 @@ public final class TextValidation {
                     "detailedDescription exceeds max length (" + MAX_DETAILED_DESCRIPTION_CHARS + " characters)");
         }
     }
+
+    /**
+     * Проверка длины и санитизация HTML (plain text без тегов не меняется).
+     */
+    public static String prepareDetailedDescription(String detailedDescription) {
+        requireDetailedDescriptionLength(detailedDescription);
+        return DetailedDescriptionHtml.sanitize(detailedDescription);
+    }
 }
