@@ -21,11 +21,12 @@ services:
       JWT_SECRET_KEY: ReKJZW6VekQl9blL2NSD9PeOmU65d8tq
       REFRESH_SECRET_KEY: 9St9275RBcn2RCucOffCbYDnYjhvt94q
       TBANK_ACQUIRING_BASE_URL: ${TBANK_ACQUIRING_BASE_URL:-https://securepay.tinkoff.ru/v2}
-      TBANK_TERMINAL_KEY: ${TBANK_TERMINAL_KEY:-}
-      TBANK_PASSWORD: ${TBANK_PASSWORD:-}
+      # Тестовый DEMO-терминал (пока); на боевой — переопределить через .env
+      TBANK_TERMINAL_KEY: ${TBANK_TERMINAL_KEY:-1774433757853DEMO}
+      TBANK_PASSWORD: ${TBANK_PASSWORD:-"^J0od&Qj5^KNwQ!#"}
       TBANK_SUCCESS_URL: ${TBANK_SUCCESS_URL:-https://night-vision.su/payment/success}
       TBANK_FAIL_URL: ${TBANK_FAIL_URL:-https://night-vision.su/payment/fail}
-      TBANK_NOTIFICATION_URL: ${TBANK_NOTIFICATION_URL:-}
+      TBANK_NOTIFICATION_URL: ${TBANK_NOTIFICATION_URL:-https://api.night-vision.su/api/payments/tbank/notification}
       # Общий секрет с плагином для WS (≥32 символа). Без него /api/game/ws и /api/game/online не работают.
       GAME_SERVER_WS_TOKEN: ${GAME_SERVER_WS_TOKEN:-}
       GAME_SERVER_STATS_SERVER_ID: ${GAME_SERVER_STATS_SERVER_ID:-default}
